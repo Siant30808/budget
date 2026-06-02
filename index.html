@@ -118,7 +118,7 @@
   .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#43A047,#1B5E20);box-shadow:0 4px 16px rgba(46,125,50,.4);border:none;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50;transition:transform .15s}
   .fab:active{transform:scale(.93)}
   /* Nav */
-  .nav{display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;position:fixed;bottom:0;left:0;right:0;z-index:9999;background-color:#ffffff!important;border-top:2px solid #E0E0E0}
+  .nav{display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;position:fixed;bottom:0;left:0;right:0;z-index:9999;background-color:rgba(255,255,255,.82)!important;border-top:1px solid rgba(255,255,255,.5)}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
   .nav-icon{font-size:22px}.nav-label{font-size:11px;color:var(--muted)}
   .nav-item.active .nav-label{color:var(--green);font-weight:700}
@@ -155,7 +155,7 @@
   .import-btn{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--blue);font-size:15px;font-weight:700;cursor:pointer;color:var(--blue);background:none;margin-top:8px}
   .danger-btn{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--red);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--red);margin-top:8px}
   /* BG */
-  .bg-layer{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center center;background-repeat:no-repeat;background-attachment:fixed;transition:opacity .4s}
+  .bg-layer{position:fixed;inset:-10px;z-index:-1;background-size:cover;background-position:center center;background-repeat:no-repeat;transition:opacity .4s;will-change:transform}
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
