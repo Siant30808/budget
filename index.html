@@ -193,7 +193,7 @@
           <div style="font-size:15px;font-weight:700" id="hdr-savings">NT$0</div>
         </div>
       </div>
-      <div class="header-period"><span class="period-dot"></span><span id="hdr-period">本期 載入中...</span></div>
+      <div class="header-period"><span class="period-dot"></span><span id="hdr-period">本期計算中</span></div>
     </div>
 
     <div class="summary">
@@ -432,22 +432,35 @@ function save(){ localStorage.setItem(LS_DATA,JSON.stringify(txData)); localStor
 
 // ── 週期計算（發薪日到次月發薪日前一天）──
 function getPeriod(dateStr){
-  const d=dateStr?new Date(dateStr):new Date();
-  const day=d.getDate(), y=d.getFullYear(), m=d.getMonth();
-  const pd=cfg.payday;
-  let pStart, pEnd;
-  if(day>=pd){
-    pStart=new Date(y,m,pd);
-    pEnd=new Date(y,m+1,pd-1);
-  } else {
-    pStart=new Date(y,m-1,pd);
-    pEnd=new Date(y,m,pd-1);
+  try{
+    const d=dateStr?new Date(dateStr):new Date();
+    const day=d.getDate(), y=d.getFullYear(), m=d.getMonth();
+    const pd=Math.min(28,Math.max(1,parseInt(cfg.payday)||5));
+    let pStart, pEnd;
+    if(day>=pd){
+      pStart=new Date(y,m,pd);
+      pEnd=new Date(y,m+1,pd-1);
+    } else {
+      pStart=new Date(y,m-1,pd);
+      pEnd=new Date(y,m,pd-1);
+    }
+    return {start:pStart, end:pEnd,
+      startStr:pStart.toISOString().slice(0,10),
+      endStr:pEnd.toISOString().slice(0,10),
+      label:`${pStart.getMonth()+1}/${pStart.getDate()} ~ ${pEnd.getMonth()+1}/${pEnd.getDate()}`
+    };
+  }catch(e){
+    // 保護：萬一出錯就用自然月
+    const now=new Date();
+    const y=now.getFullYear(), m=now.getMonth();
+    const pStart=new Date(y,m,1);
+    const pEnd=new Date(y,m+1,0);
+    return {start:pStart, end:pEnd,
+      startStr:pStart.toISOString().slice(0,10),
+      endStr:pEnd.toISOString().slice(0,10),
+      label:`${pStart.getMonth()+1}/1 ~ ${pEnd.getMonth()+1}/${pEnd.getDate()}`
+    };
   }
-  return {start:pStart, end:pEnd,
-    startStr:pStart.toISOString().slice(0,10),
-    endStr:pEnd.toISOString().slice(0,10),
-    label:`${pStart.getMonth()+1}/${pStart.getDate()} ~ ${pEnd.getMonth()+1}/${pEnd.getDate()}`
-  };
 }
 
 function currentPeriod(){ return getPeriod(null); }
@@ -882,7 +895,18 @@ function setHeader(){
 }
 
 // ── 初始化 ──
-setHeader();updateModalUI();refresh();
+try{
+  setHeader();
+  updateModalUI();
+  refresh();
+}catch(e){
+  console.error('Init error:',e);
+  // 強制更新期間標籤避免卡在載入中
+  try{
+    const p=currentPeriod();
+    document.getElementById('hdr-period').textContent='本期 '+p.label;
+  }catch(e2){}
+}
 const _bg=localStorage.getItem('acct_bg_v1');
 if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
 
