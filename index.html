@@ -418,6 +418,13 @@ const LS_DATA='acct_txdata_v1', LS_CFG='acct_settings_v1';
 let txData=JSON.parse(localStorage.getItem(LS_DATA)||'[]');
 let cfg=Object.assign({username:'智豪',payday:5,budget:15000,title:'記帳本',savings:0},
   JSON.parse(localStorage.getItem(LS_CFG)||'{}'));
+// 確保所有必要欄位存在（相容舊版資料）
+cfg.payday=parseInt(cfg.payday)||5;
+cfg.budget=parseInt(cfg.budget)||15000;
+cfg.savings=parseFloat(cfg.savings)||0;
+if(!cfg.username) cfg.username='智豪';
+if(!cfg.title) cfg.title='記帳本';
+save();
 
 let curType='expense', curPay='現金';
 
