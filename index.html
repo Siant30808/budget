@@ -24,6 +24,8 @@
   }
   html,body{height:100%;background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text)}
   .app{max-width:420px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+  .app-with-bg,.app-with-bg~*{background:transparent!important}
+  body:has(.app-with-bg){background:transparent!important}
   .header{background:linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C);padding:20px 20px 28px;color:#fff}
   .header-top{display:flex;justify-content:space-between;align-items:flex-start}
   .header-date{font-size:13px;opacity:.85;margin-bottom:4px}
@@ -152,9 +154,12 @@
   .danger-btn{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--red);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--red);margin-top:8px}
   /* BG */
   .bg-layer{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;background-repeat:no-repeat;transition:opacity .4s}
+  .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
   .app-with-bg .nav,.app-with-bg .settings-section{background:rgba(255,255,255,.88);backdrop-filter:blur(12px)}
+  .app-with-bg .header{background:rgba(27,94,32,.85);backdrop-filter:blur(8px)}
+  .app-with-bg .cc-header{background:rgba(13,71,161,.85);backdrop-filter:blur(8px)}
   .bg-upload-box{border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:#FAFAFA}
   .bg-upload-box:hover{border-color:var(--green-light);background:var(--green-bg)}
   .bg-upload-box input{display:none}
@@ -704,14 +709,23 @@ function updateBgOpacity(v){
   const d=localStorage.getItem('acct_bg_v1');if(d)applyBg(d,v);
 }
 function applyBg(url,op){
-  document.getElementById('bgLayer').style.cssText=`background-image:url(${url});background-size:cover;background-position:center;opacity:${(parseInt(op)/100).toFixed(2)}`;
+  const layer=document.getElementById('bgLayer');
+  layer.style.backgroundImage=`url(${url})`;
+  layer.style.backgroundSize='cover';
+  layer.style.backgroundPosition='center';
+  layer.style.backgroundRepeat='no-repeat';
+  layer.style.opacity=(parseInt(op)/100).toFixed(2);
   document.getElementById('mainApp').classList.add('app-with-bg');
+  document.body.style.background='transparent';
+  document.documentElement.style.background='transparent';
 }
 function removeBg(){
   localStorage.removeItem('acct_bg_v1');
   document.getElementById('bgLayer').style.backgroundImage='';
   document.getElementById('bgPreview').classList.remove('show');
   document.getElementById('mainApp').classList.remove('app-with-bg');
+  document.body.style.background='';
+  document.documentElement.style.background='';
   showToast('🗑️ 背景已移除');
 }
 
