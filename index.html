@@ -193,7 +193,7 @@
 
     <div class="summary">
       <div class="sum-card">
-        <div class="sum-label" id="lbl-exp">本期支出</div>
+        <div class="sum-label" id="lbl-exp">💵 現金支出</div>
         <div class="sum-val expense" id="s-exp">NT$0</div>
       </div>
       <div class="sum-card">
@@ -460,21 +460,21 @@ function updateSummary(){
   const p=currentPeriod();
   const txs=getPeriodTx(p);
   const inc=txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const card=txs.filter(t=>t.type==='expense'&&t.pay==='信用卡').reduce((s,t)=>s+t.amount,0);
   const cash=txs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
-  document.getElementById('s-exp').textContent=fmt(exp);
-  document.getElementById('s-bal').textContent=fmt(inc-exp);
+  // 支出只算現金，結餘 = 收入 - 現金支出
+  document.getElementById('s-exp').textContent=fmt(cash);
+  document.getElementById('s-bal').textContent=fmt(inc-cash);
   document.getElementById('s-card').textContent=fmt(card);
   document.getElementById('s-cash').textContent=fmt(cash);
   document.getElementById('hdr-savings').textContent=fmt(cfg.savings);
   document.getElementById('hdr-period').textContent='本期 '+p.label;
 
-  // 預算進度
-  const pct=Math.min(100,Math.round(exp/cfg.budget*100));
+  // 預算進度（以現金支出為基準）
+  const pct=Math.min(100,Math.round(cash/cfg.budget*100));
   document.getElementById('period-fill').style.width=pct+'%';
   document.getElementById('period-fill').style.background=pct>80?'#E53935':pct>60?'#FB8C00':'#4CAF50';
-  document.getElementById('budget-used-lbl').textContent='已用 '+fmt(exp);
+  document.getElementById('budget-used-lbl').textContent='已用 '+fmt(cash);
   document.getElementById('budget-total-lbl').textContent='預算 '+fmt(cfg.budget);
 
   // 剩餘天數
@@ -560,7 +560,7 @@ function refresh(){
   const p=currentPeriod();
   const txs=getPeriodTx(p);
   updateSummary();
-  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'),PIE_COLORS);
+  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),PIE_COLORS);
   drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['#1976D2','#42A5F5','#0D47A1','#64B5F6','#1565C0','#90CAF9','#0288D1','#4FC3F7']);
   renderTx();
 }
