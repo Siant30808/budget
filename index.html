@@ -211,6 +211,16 @@
       <div class="sum-card"><div class="sum-label">💵 現金</div><div class="sum-val" style="color:var(--green)" id="s-cash">NT$0</div></div>
     </div>
 
+    <!-- 當前存款卡片 -->
+    <div onclick="openSavingsEdit()" style="margin:0 16px 14px;background:linear-gradient(135deg,#6A1B9A,#8E24AA);border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 14px rgba(106,27,154,.3);cursor:pointer">
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8);margin-bottom:4px">🏦 當前存款（自動計算）</div>
+        <div style="font-size:22px;font-weight:700;color:#fff" id="s-savings-calc">NT$0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px">存款基準 + 本期結餘｜點擊更新基準</div>
+      </div>
+      <div style="font-size:28px;opacity:.6">💰</div>
+    </div>
+
     <!-- 預算進度 -->
     <div class="period-bar-wrap">
       <div class="period-bar-top">
@@ -469,15 +479,33 @@ function updateSummary(){
   const card=txs.filter(t=>t.type==='expense'&&t.pay==='信用卡').reduce((s,t)=>s+t.amount,0);
   const cash=txs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
   const bal=inc-cash;
-  // 實際存款 = 當前存款基準 + 本期結餘
+  // 實際存款 = 存款基準 + 本期收入 - 本期現金支出
   const totalSavings=cfg.savings+bal;
   document.getElementById('s-exp').textContent=fmt(cash);
   document.getElementById('s-bal').textContent=fmt(bal);
   document.getElementById('s-card').textContent=fmt(card);
   document.getElementById('s-cash').textContent=fmt(cash);
-  // 顯示自動計算後的存款
+  document.getElementById('s-savings-calc').textContent=fmt(totalSavings);
+  // 右上角也同步
   document.getElementById('hdr-savings').textContent=fmt(totalSavings);
   document.getElementById('hdr-period').textContent='本期 '+p.label;
+
+  // 預算進度（以現金支出為基準）
+  const pct=Math.min(100,Math.round(cash/cfg.budget*100));
+  document.getElementById('period-fill').style.width=pct+'%';
+  document.getElementById('period-fill').style.background=pct>80?'#E53935':pct>60?'#FB8C00':'#4CAF50';
+  document.getElementById('budget-used-lbl').textContent='已用 '+fmt(cash);
+  document.getElementById('budget-total-lbl').textContent='預算 '+fmt(cfg.budget);
+
+  // 剩餘天數
+  const today=new Date(); today.setHours(0,0,0,0);
+  const end=new Date(p.endStr); end.setHours(0,0,0,0);
+  const daysLeft=Math.max(0,Math.round((end-today)/86400000));
+  const totalDays=Math.round((new Date(p.endStr)-new Date(p.startStr))/86400000)+1;
+  const elapsed=totalDays-daysLeft;
+  document.getElementById('days-left').textContent=`剩 ${daysLeft} 天`;
+  document.getElementById('budget-label').textContent=`本期預算（第 ${elapsed}/${totalDays} 天）`;
+}
 
   // 預算進度（以現金支出為基準）
   const pct=Math.min(100,Math.round(cash/cfg.budget*100));
