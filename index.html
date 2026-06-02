@@ -419,7 +419,7 @@ const PIE_COLORS=['#EF5350','#42A5F5','#AB47BC','#26A69A','#FFA726','#66BB6A','#
 const LS_DATA='acct_txdata_v1', LS_CFG='acct_settings_v1';
 
 let txData=JSON.parse(localStorage.getItem(LS_DATA)||'[]');
-let cfg=Object.assign({username:'智豪',payday:5,budget:15000,title:'記帳本',savings:0},
+let cfg=Object.assign({username:'智豪',payday:5,budget:15000,title:'記帳本',savings:0,lastPeriodStart:''},
   JSON.parse(localStorage.getItem(LS_CFG)||'{}'));
 // 確保所有必要欄位存在（相容舊版資料）
 cfg.payday=parseInt(cfg.payday)||5;
@@ -432,6 +432,32 @@ save();
 let curType='expense', curPay='現金';
 
 function save(){ localStorage.setItem(LS_DATA,JSON.stringify(txData)); localStorage.setItem(LS_CFG,JSON.stringify(cfg)); }
+
+// ── 自動跨期結算：新週期開始時把上期最終存款帶入基準 ──
+function checkPeriodRollover(){
+  try{
+    const p=currentPeriod();
+    const lastStart=cfg.lastPeriodStart||'';
+    if(lastStart && lastStart !== p.startStr){
+      // 週期已切換，計算上期最終存款
+      const prevPeriod={startStr:lastStart, endStr:cfg.lastPeriodEnd||''};
+      const prevTxs=txData.filter(t=>t.date>=prevPeriod.startStr&&t.date<=prevPeriod.endStr);
+      const prevInc=prevTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+      const prevCash=prevTxs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
+      const finalSavings=cfg.savings+(prevInc-prevCash);
+      cfg.savings=finalSavings;
+      cfg.lastPeriodStart=p.startStr;
+      cfg.lastPeriodEnd=p.endStr;
+      save();
+      showToast(`🔄 已自動結算上期，存款基準更新為 NT$${Math.round(finalSavings).toLocaleString()}`);
+    } else if(!lastStart){
+      // 第一次記錄週期起始
+      cfg.lastPeriodStart=p.startStr;
+      cfg.lastPeriodEnd=p.endStr;
+      save();
+    }
+  }catch(e){}
+}
 
 // ── 週期計算（發薪日到次月發薪日前一天）──
 function getPeriod(dateStr){
@@ -866,6 +892,7 @@ function setHeader(){
 
 // ── 初始化 ──
 try{
+  checkPeriodRollover();
   setHeader();
   updateModalUI();
   refresh();
