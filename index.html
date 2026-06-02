@@ -812,18 +812,6 @@ function setHeader(){
 }
 
 // ── 初始化 ──
-if(!txData.length){
-  const today=new Date().toISOString().slice(0,10);
-  const y=new Date(Date.now()-86400000).toISOString().slice(0,10);
-  txData=[
-    {id:1,type:'expense',cat:'餐飲',amount:180,date:today,time:'12:15',pay:'信用卡',note:'午餐'},
-    {id:2,type:'expense',cat:'交通',amount:20,date:today,time:'13:30',pay:'現金',note:'公車'},
-    {id:3,type:'expense',cat:'購物',amount:350,date:y,time:'17:00',pay:'現金',note:'書局'},
-    {id:4,type:'income',cat:'薪資',amount:20000,date:y,time:'09:00',pay:'—',note:'本月薪資'},
-    {id:5,type:'expense',cat:'娛樂',amount:320,date:y,time:'21:00',pay:'信用卡',note:'電影'},
-  ];
-  save();
-}
 setHeader();updateModalUI();refresh();
 const _bg=localStorage.getItem('acct_bg_v1');
 if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
