@@ -527,40 +527,6 @@ function updateSummary(){
   document.getElementById('budget-label').textContent=`本期預算（第 ${elapsed}/${totalDays} 天）`;
 }
 
-  // 預算進度（以現金支出為基準）
-  const pct=Math.min(100,Math.round(cash/cfg.budget*100));
-  document.getElementById('period-fill').style.width=pct+'%';
-  document.getElementById('period-fill').style.background=pct>80?'#E53935':pct>60?'#FB8C00':'#4CAF50';
-  document.getElementById('budget-used-lbl').textContent='已用 '+fmt(cash);
-  document.getElementById('budget-total-lbl').textContent='預算 '+fmt(cfg.budget);
-
-  // 剩餘天數
-  const today=new Date(); today.setHours(0,0,0,0);
-  const end=new Date(p.endStr); end.setHours(0,0,0,0);
-  const daysLeft=Math.max(0,Math.round((end-today)/86400000));
-  const totalDays=Math.round((new Date(p.endStr)-new Date(p.startStr))/86400000)+1;
-  const elapsed=totalDays-daysLeft;
-  document.getElementById('days-left').textContent=`剩 ${daysLeft} 天`;
-  document.getElementById('budget-label').textContent=`本期預算（第 ${elapsed}/${totalDays} 天）`;
-}
-
-  // 預算進度（以現金支出為基準）
-  const pct=Math.min(100,Math.round(cash/cfg.budget*100));
-  document.getElementById('period-fill').style.width=pct+'%';
-  document.getElementById('period-fill').style.background=pct>80?'#E53935':pct>60?'#FB8C00':'#4CAF50';
-  document.getElementById('budget-used-lbl').textContent='已用 '+fmt(cash);
-  document.getElementById('budget-total-lbl').textContent='預算 '+fmt(cfg.budget);
-
-  // 剩餘天數
-  const today=new Date(); today.setHours(0,0,0,0);
-  const end=new Date(p.endStr); end.setHours(0,0,0,0);
-  const daysLeft=Math.max(0,Math.round((end-today)/86400000));
-  const totalDays=Math.round((new Date(p.endStr)-new Date(p.startStr))/86400000)+1;
-  const elapsed=totalDays-daysLeft;
-  document.getElementById('days-left').textContent=`剩 ${daysLeft} 天`;
-  document.getElementById('budget-label').textContent=`本期預算（第 ${elapsed}/${totalDays} 天）`;
-}
-
 // ── 圓餅圖 ──
 function drawPie(canvasId, legendId, list, colors){
   const catMap={};
@@ -912,9 +878,10 @@ if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
 
 // ── PWA Service Worker 註冊 ──
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js')
-    .then(()=>console.log('SW registered'))
-    .catch(e=>console.log('SW error',e));
+  // 先清除所有舊的 SW 快取，確保載入最新版本
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(reg=>reg.unregister());
+  });
 }
 </script>
 </body>
