@@ -156,7 +156,7 @@
   .danger-btn{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--red);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--red);margin-top:8px}
   /* BG */
   .bg-layer{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-  .bg-layer img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:100%;min-height:100%;width:auto;height:auto;object-fit:cover;transition:opacity .4s}
+  .bg-layer img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:100vw;min-height:100vh;min-height:-webkit-fill-available;width:auto;height:auto;object-fit:cover;transition:opacity .4s}
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
@@ -879,6 +879,20 @@ try{
 }
 const _bg=localStorage.getItem('acct_bg_v1');
 if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
+
+// 鎖定背景層高度，避免網址列收起時背景縮放
+(function lockBgHeight(){
+  const layer=document.getElementById('bgLayer');
+  let initH=window.innerHeight;
+  layer.style.height=initH+'px';
+  window.addEventListener('resize',()=>{
+    if(!localStorage.getItem('acct_bg_v1'))return;
+    clearTimeout(window._bgT);
+    window._bgT=setTimeout(()=>{
+      layer.style.height=window.innerHeight+'px';
+    },500);
+  },{passive:true});
+})();
 
 // ── PWA Service Worker 註冊 ──
 if('serviceWorker' in navigator){
