@@ -155,7 +155,8 @@
   .import-btn{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--blue);font-size:15px;font-weight:700;cursor:pointer;color:var(--blue);background:none;margin-top:8px}
   .danger-btn{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--red);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--red);margin-top:8px}
   /* BG */
-  .bg-layer{position:fixed;inset:-10px;z-index:-1;background-size:cover;background-position:center center;background-repeat:no-repeat;transition:opacity .4s;will-change:transform}
+  .bg-layer{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+  .bg-layer img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:100%;min-height:100%;width:auto;height:auto;object-fit:cover;transition:opacity .4s}
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
@@ -179,7 +180,7 @@
 </style>
 </head>
 <body>
-<div class="bg-layer" id="bgLayer"></div>
+<div class="bg-layer" id="bgLayer"><img id="bgImg" style="display:none;opacity:0" alt=""></div>
 <div class="app" id="mainApp">
 
   <!-- 主頁 -->
@@ -742,24 +743,24 @@ function handleBgUpload(e){
   };r.readAsDataURL(f);
 }
 function updateBgOpacity(v){
-  document.getElementById('bgOpacityVal').textContent=v+'%';localStorage.setItem('acct_bg_opacity',v);
-  const d=localStorage.getItem('acct_bg_v1');if(d)applyBg(d,v);
+  document.getElementById('bgOpacityVal').textContent=v+'%';
+  localStorage.setItem('acct_bg_opacity',v);
+  const img=document.getElementById('bgImg');
+  if(img.src) img.style.opacity=(parseInt(v)/100).toFixed(2);
 }
 function applyBg(url,op){
-  const layer=document.getElementById('bgLayer');
-  layer.style.backgroundImage=`url(${url})`;
-  layer.style.backgroundSize='cover';
-  layer.style.backgroundPosition='center center';
-  layer.style.backgroundRepeat='no-repeat';
-  layer.style.backgroundAttachment='fixed';
-  layer.style.opacity=(parseInt(op)/100).toFixed(2);
+  const img=document.getElementById('bgImg');
+  img.src=url;
+  img.style.display='block';
+  img.style.opacity=(parseInt(op)/100).toFixed(2);
   document.getElementById('mainApp').classList.add('app-with-bg');
   document.body.style.background='transparent';
   document.documentElement.style.background='transparent';
 }
 function removeBg(){
   localStorage.removeItem('acct_bg_v1');
-  document.getElementById('bgLayer').style.backgroundImage='';
+  const img=document.getElementById('bgImg');
+  img.src='';img.style.display='none';
   document.getElementById('bgPreview').classList.remove('show');
   document.getElementById('mainApp').classList.remove('app-with-bg');
   document.body.style.background='';
