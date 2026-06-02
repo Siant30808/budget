@@ -118,12 +118,14 @@
   .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#43A047,#1B5E20);box-shadow:0 4px 16px rgba(46,125,50,.4);border:none;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50;transition:transform .15s}
   .fab:active{transform:scale(.93)}
   /* Nav */
-  .nav{background:var(--surface);display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;box-shadow:0 -1px 0 var(--border);position:sticky;bottom:0;z-index:40}
+  .nav{background:var(--surface);display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;box-shadow:0 -1px 0 var(--border);position:fixed;bottom:0;left:0;right:0;z-index:40;max-width:420px;margin:0 auto}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
   .nav-icon{font-size:22px}.nav-label{font-size:11px;color:var(--muted)}
   .nav-item.active .nav-label{color:var(--green);font-weight:700}
   /* 有背景圖時 nav 加強遮罩 */
-  .app-with-bg .nav{background:rgba(255,255,255,.92)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.4)}
+  .app-with-bg .nav{background:rgba(240,244,240,.95)!important;border-top:1px solid rgba(0,0,0,.1)}
+  /* nav 固定後需要底部留空間 */
+  .page.active{padding-bottom:70px}
   /* Toast */
   .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:#323232;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:200;transition:transform .3s;pointer-events:none}
   .toast.show{transform:translateX(-50%) translateY(0)}
