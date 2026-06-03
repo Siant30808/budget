@@ -216,6 +216,26 @@
   .period-tabs::-webkit-scrollbar{display:none}
   .period-tab{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);white-space:nowrap}
   .period-tab.active{background:var(--green);border-color:var(--green);color:#fff}
+  /* Report Page */
+  .report-page{padding:0 0 20px;overflow-y:auto}
+  .report-header{background:linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C);padding:20px 20px 24px;color:#fff;margin-bottom:16px}
+  .report-header h2{font-size:20px;font-weight:700;margin-top:4px}
+  .report-table-wrap{padding:0 16px}
+  .report-table{width:100%;border-collapse:collapse}
+  .report-table th{font-size:12px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--border);text-align:right}
+  .report-table th:first-child{text-align:left}
+  .report-table td{font-size:13px;padding:11px 6px;border-bottom:1px solid rgba(220,220,220,.5);text-align:right;vertical-align:middle}
+  .report-table td:first-child{text-align:left;font-weight:600;color:var(--text)}
+  .report-table tr:last-child td{border-bottom:none}
+  .report-table tr.current-row td{background:rgba(46,125,50,.06)}
+  .report-table tr.current-row td:first-child::after{content:' ●';font-size:9px;color:var(--green)}
+  .report-amt-neg{color:var(--red);font-weight:700}
+  .report-amt-pos{color:var(--green);font-weight:700}
+  .report-amt-blue{color:var(--blue);font-weight:700}
+  .report-card{background:rgba(255,255,255,.85);border-radius:20px;padding:0 4px;
+    box-shadow:6px 6px 14px rgba(170,180,195,.4),-5px -5px 12px rgba(255,255,255,.9);
+    border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px)}
+  .report-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -473,6 +493,33 @@
     </div>
   </div>
 
+  <!-- 報表頁 -->
+  <div class="page" id="page-report">
+    <div class="report-page">
+      <div class="report-header">
+        <div style="font-size:13px;opacity:.8">歷史紀錄</div>
+        <h2>📈 月結報表</h2>
+      </div>
+      <div class="report-table-wrap">
+        <div class="report-card">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>週期</th>
+                <th>月初餘額</th>
+                <th>現金支出</th>
+                <th>月底結餘</th>
+              </tr>
+            </thead>
+            <tbody id="report-tbody">
+              <tr><td colspan="4" class="report-empty">載入中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <button class="fab" id="fab" aria-label="新增">
@@ -486,7 +533,7 @@
 <div class="nav">
   <div class="nav-item active" id="nav-home" onclick="switchPage('home')"><div class="nav-icon">🏠</div><div class="nav-label">主頁</div></div>
   <div class="nav-item" id="nav-card" onclick="switchPage('card')"><div class="nav-icon">💳</div><div class="nav-label">信用卡</div></div>
-  <div class="nav-item" id="nav-export" onclick="exportExcel()"><div class="nav-icon">📊</div><div class="nav-label">匯出</div></div>
+  <div class="nav-item" id="nav-report" onclick="switchPage('report')"><div class="nav-icon">📈</div><div class="nav-label">報表</div></div>
   <div class="nav-item" id="nav-settings" onclick="switchPage('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">設定</div></div>
 </div>
 
@@ -738,6 +785,7 @@ function switchPage(n){
   const ni=document.getElementById('nav-'+n); if(ni) ni.classList.add('active');
   if(n==='settings') loadSettingsForm();
   if(n==='card') renderCardStats();
+  if(n==='report') renderReport();
 }
 
 // ── 首頁更新 ──
@@ -1075,6 +1123,50 @@ function removeBg(){
   document.body.style.background='';
   document.documentElement.style.background='';
   showToast('🗑️ 背景已移除');
+}
+
+// ── 報表頁 ──
+function renderReport(){
+  const allPeriods = getAllPeriods().slice().reverse(); // 由舊到新
+  const cp = currentPeriod();
+
+  // 計算每期的 income / cashExp
+  const stats = allPeriods.map(p => {
+    const txs = getPeriodTx(p);
+    const income = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const cashExp = txs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
+    return { p, income, cashExp, net: income - cashExp };
+  });
+
+  // cfg.savings = 本期月初餘額，向前/後推算其他期
+  const cpIdx = stats.findIndex(s => s.p.startStr === cp.startStr);
+  const startBals = new Array(stats.length);
+  startBals[cpIdx] = cfg.savings;
+  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i+1].net;
+  for(let i = cpIdx+1; i < stats.length; i++) startBals[i] = startBals[i-1] + stats[i-1].net;
+
+  const tbody = document.getElementById('report-tbody');
+  if(stats.length === 0){
+    tbody.innerHTML = '<tr><td colspan="4" class="report-empty">尚無記帳資料</td></tr>';
+    return;
+  }
+
+  // 由新到舊顯示
+  tbody.innerHTML = stats.slice().reverse().map((s, idx) => {
+    const realIdx = stats.length - 1 - idx;
+    const openBal = startBals[realIdx];
+    const closeBal = openBal + s.net;
+    const isCurrent = s.p.startStr === cp.startStr;
+    const openCls = openBal < 0 ? 'report-amt-neg' : 'report-amt-pos';
+    const expCls = 'report-amt-neg';
+    const closeCls = closeBal < 0 ? 'report-amt-neg' : 'report-amt-pos';
+    return `<tr${isCurrent?' class="current-row"':''}>
+      <td>${s.p.label}</td>
+      <td class="${openCls}">${fmt(openBal)}</td>
+      <td class="${expCls}">${fmt(s.cashExp)}</td>
+      <td class="${closeCls}">${fmt(closeBal)}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── 匯出 Excel（按週期） ──
