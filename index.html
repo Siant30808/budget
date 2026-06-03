@@ -19,11 +19,15 @@
     --green:#2E7D32;--green-light:#4CAF50;--green-bg:#E8F5E9;
     --red:#C62828;--red-light:#EF5350;--red-bg:#FFEBEE;
     --blue:#1565C0;--blue-bg:#E3F2FD;--purple:#6A1B9A;
-    --surface:#FFF;--bg:#F0F4F0;--text:#1A1A1A;--muted:#666;--border:#E0E0E0;
+    --surface:#FFF;--bg:#E8ECF1;--text:#1A1A1A;--muted:#666;--border:#E0E0E0;
     --shadow:0 2px 12px rgba(0,0,0,.08);
+    /* Neumorphism */
+    --neu-bg:rgba(255,255,255,.72);
+    --neu-shadow:6px 6px 14px rgba(180,190,200,.55),-6px -6px 14px rgba(255,255,255,.85);
+    --neu-inset:inset 3px 3px 7px rgba(180,190,200,.45),inset -3px -3px 7px rgba(255,255,255,.8);
   }
   html,body{height:100%;background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text)}
-  .app{max-width:420px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+  .app{max-width:420px;margin:0 auto;min-height:100vh;background:#E8ECF1;display:flex;flex-direction:column}
   .app-with-bg{background:transparent!important}
   body:has(.app-with-bg){background:transparent!important}
   /* FAB 永遠保持不透明 */
@@ -36,50 +40,61 @@
   .period-dot{width:6px;height:6px;border-radius:50%;background:#A5D6A7;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   /* Summary */
-  .summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-top:-20px;margin-bottom:8px;position:relative;z-index:2}
-  .summary-small{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px;position:relative;z-index:2}
-  .sum-card{background:var(--surface);border-radius:14px;padding:12px 10px;text-align:center;box-shadow:var(--shadow)}
-  .sum-savings{cursor:pointer;transition:transform .12s}.sum-savings:active{transform:scale(.97)}
-  .sum-label{font-size:11px;color:var(--muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sum-val{font-size:14px;font-weight:700;white-space:nowrap}
-  .sum-val.savings{color:var(--purple);font-size:15px}
+  .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-top:-20px;margin-bottom:12px;position:relative;z-index:2}
+  .summary-small{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-bottom:14px;position:relative;z-index:2}
+  .sum-card{background:rgba(255,255,255,.7);border-radius:20px;padding:14px 12px;
+    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
+    border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .sum-card-inner{display:flex;align-items:center;gap:10px}
+  .sum-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;
+    box-shadow:inset 3px 3px 6px rgba(170,180,195,.4),inset -3px -3px 6px rgba(255,255,255,.9);
+    background:rgba(255,255,255,.5)}
+  .sum-label{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .sum-val{font-size:18px;font-weight:700;white-space:nowrap}
   .sum-val.balance{color:var(--green)}.sum-val.expense{color:var(--red)}.sum-val.income{color:var(--blue)}
   /* Quick */
   .section-title{font-size:16px;font-weight:700;padding:0 16px;margin-bottom:10px}
-  .quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:18px}
-  .quick-btn{background:var(--surface);border-radius:14px;padding:14px 12px;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;box-shadow:var(--shadow);transition:transform .12s}
-  .quick-btn:active{transform:scale(.97)}
-  .quick-btn .icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
-  .quick-btn.exp .icon{background:var(--red-light)}.quick-btn.inc .icon{background:#1976D2}
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-bottom:16px}
+  .quick-btn{background:rgba(255,255,255,.7);border-radius:20px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;cursor:pointer;
+    border:1px solid rgba(255,255,255,.85);
+    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
+    transition:all .15s;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .quick-btn:active{box-shadow:inset 4px 4px 8px rgba(170,180,195,.45),inset -4px -4px 8px rgba(255,255,255,.85);transform:scale(.98)}
+  .quick-btn .icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:inset 3px 3px 6px rgba(170,180,195,.4),inset -3px -3px 6px rgba(255,255,255,.9);
+    background:rgba(255,255,255,.5)}
   .quick-btn.exp{color:var(--red)}.quick-btn.inc{color:var(--blue)}
+  .quick-btn-icons{font-size:15px;margin-left:auto;opacity:.45}
   /* Days left bar */
-  .period-bar-wrap{margin:0 16px 16px;background:var(--surface);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-  .period-bar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
-  .period-bar-label{font-weight:600}
-  .period-bar-days{color:var(--muted)}
-  .period-bar{height:8px;background:#EEE;border-radius:6px;overflow:hidden}
-  .period-bar-fill{height:100%;border-radius:6px;transition:width .6s;background:linear-gradient(90deg,#4CAF50,#2E7D32)}
+  .period-bar-wrap{margin:0 16px 14px;background:rgba(255,255,255,.7);border-radius:20px;padding:14px 16px;
+    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
+    border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .period-bar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .period-bar-label{font-weight:700;font-size:14px}
+  .period-bar-days{color:var(--muted);font-size:12px}
+  .period-bar{height:10px;border-radius:6px;overflow:hidden;
+    box-shadow:inset 2px 2px 5px rgba(170,180,195,.5),inset -2px -2px 5px rgba(255,255,255,.8);
+    background:rgba(220,225,230,.5)}
+  .period-bar-fill{height:100%;border-radius:6px;transition:width .6s;background:linear-gradient(90deg,#4CAF50,#26C6DA,#7E57C2)}
   /* Side panel */
-  .side-panel{padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .panel-card{background:var(--surface);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-  .panel-title{font-size:13px;font-weight:700;margin-bottom:10px}
+  .side-panel{padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .panel-card{background:rgba(255,255,255,.7);border-radius:20px;padding:14px;
+    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
+    border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .panel-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)}
   .pie-wrap{display:flex;justify-content:center}
-  .cat-list{margin-top:8px}
-  .cat-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:4px}
-  .cat-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-  .cat-name{flex:1;color:var(--muted)}.cat-pct{font-weight:600}
-  .budget-month{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .budget-used{font-size:13px;font-weight:600;color:var(--red)}
-  .budget-total{font-size:12px;color:var(--muted)}
-  .progress-bar{height:8px;background:#EEE;border-radius:6px;overflow:hidden;margin:8px 0 4px}
-  .progress-fill{height:100%;border-radius:6px;transition:width .6s}
-  .progress-pct{font-size:13px;font-weight:700}
+  .cat-list{margin-top:10px}
+  .cat-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:5px}
+  .cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .cat-name{flex:1;color:var(--muted)}.cat-pct{font-weight:700;color:var(--text)}
   /* TX */
   .tx-section{flex:1;padding:0 16px 20px}
   .day-group{margin-bottom:14px}
   .day-label{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
   .day-label span{background:var(--border);border-radius:6px;padding:2px 8px}
-  .tx-item{background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);animation:fadeIn .2s}
+  .tx-item{background:rgba(255,255,255,.7);border-radius:18px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+    box-shadow:4px 4px 10px rgba(170,180,195,.45),-4px -4px 10px rgba(255,255,255,.85);
+    border:1px solid rgba(255,255,255,.85);animation:fadeIn .2s;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
   @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
   .tx-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
   .tx-info{flex:1;min-width:0}
@@ -220,27 +235,91 @@
 
     <div class="summary">
       <div class="sum-card">
-        <div class="sum-label" id="lbl-exp">💵 現金支出</div>
-        <div class="sum-val expense" id="s-exp">NT$0</div>
+        <div class="sum-card-inner">
+          <div class="sum-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="7" width="22" height="14" rx="2"/>
+              <circle cx="14" cy="14" r="4"/>
+              <circle cx="14" cy="14" r="1.5"/>
+              <line x1="3" y1="11" x2="6" y2="11"/>
+              <line x1="22" y1="11" x2="25" y2="11"/>
+            </svg>
+          </div>
+          <div>
+            <div class="sum-label">現金支出</div>
+            <div class="sum-val expense" id="s-exp">NT$0</div>
+          </div>
+        </div>
       </div>
       <div class="sum-card">
-        <div class="sum-label" id="lbl-bal">本期結餘</div>
-        <div class="sum-val balance" id="s-bal">NT$0</div>
+        <div class="sum-card-inner">
+          <div class="sum-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="22" x2="5" y2="16"/>
+              <line x1="10" y1="22" x2="10" y2="12"/>
+              <line x1="15" y1="22" x2="15" y2="8"/>
+              <circle cx="5" cy="14" r="1.5" fill="#444" stroke="none"/>
+              <circle cx="10" cy="10" r="1.5" fill="#444" stroke="none"/>
+              <circle cx="15" cy="6" r="1.5" fill="#444" stroke="none"/>
+              <polyline points="13,6 20,4 23,7"/>
+              <line x1="20" y1="4" x2="20" y2="22"/>
+            </svg>
+          </div>
+          <div>
+            <div class="sum-label">預估收入</div>
+            <div class="sum-val balance" id="s-bal">NT$0</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="summary-small">
-      <div class="sum-card"><div class="sum-label">💳 刷卡</div><div class="sum-val" style="color:var(--blue)" id="s-card">NT$0</div></div>
-      <div class="sum-card"><div class="sum-label">💵 現金</div><div class="sum-val" style="color:var(--green)" id="s-cash">NT$0</div></div>
+      <div class="sum-card">
+        <div class="sum-card-inner">
+          <div class="sum-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="6" width="22" height="16" rx="3"/>
+              <line x1="3" y1="11" x2="25" y2="11"/>
+              <rect x="6" y="15" width="5" height="2.5" rx="1" fill="#444" stroke="none"/>
+              <circle cx="21" cy="16.5" r="1.5" fill="#444" stroke="none"/>
+              <circle cx="17" cy="16.5" r="1.5" fill="#444" stroke="none"/>
+            </svg>
+          </div>
+          <div>
+            <div class="sum-label">信用卡刷卡</div>
+            <div class="sum-val" style="color:var(--blue)" id="s-card">NT$0</div>
+          </div>
+        </div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-card-inner">
+          <div class="sum-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="8" width="22" height="13" rx="2"/>
+              <circle cx="14" cy="14.5" r="4"/>
+              <text x="12" y="17" font-size="6" fill="#444" stroke="none" font-weight="bold">$</text>
+            </svg>
+          </div>
+          <div>
+            <div class="sum-label">現金手存</div>
+            <div class="sum-val" style="color:var(--green)" id="s-cash">NT$0</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 當前存款卡片 -->
-    <div onclick="openSavingsEdit()" style="margin:0 16px 14px;background:linear-gradient(135deg,#6A1B9A,#8E24AA);border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 14px rgba(106,27,154,.3);cursor:pointer">
-      <div>
-        <div style="font-size:11px;color:rgba(255,255,255,.8);margin-bottom:4px">🏦 當前存款（自動計算）</div>
-        <div style="font-size:22px;font-weight:700;color:#fff" id="s-savings-calc">NT$0</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px">存款基準 + 本期結餘｜點擊更新基準</div>
+    <!-- 當前存款卡片 - 淡紫色 Neumorphism -->
+    <div onclick="openSavingsEdit()" style="margin:0 16px 14px;background:linear-gradient(135deg,#C5CAF5,#B8BFF0,#C8C3F0);border-radius:20px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;
+      box-shadow:6px 6px 14px rgba(140,148,200,.45),-5px -5px 12px rgba(255,255,255,.7);
+      border:1px solid rgba(255,255,255,.6);cursor:pointer">
+      <div style="flex:1">
+        <div style="font-size:12px;color:#4A4A6A;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#4A4A6A" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="3" width="12" height="9" rx="1.5"/><path d="M4 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/></svg>
+          當前存款（自動計算）
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#1A1A3A;line-height:1;margin-bottom:8px" id="s-savings-calc">NT$0</div>
+        <div style="font-size:11px;color:#6060A0">存款基準 + 本期結餘｜點擊更新基準</div>
       </div>
-      <div style="font-size:28px;opacity:.6">💰</div>
+      <img src="https://raw.githubusercontent.com/Siant30808/budget/main/Pig_Coin_00000.png" style="width:90px;height:90px;object-fit:contain;filter:drop-shadow(2px 4px 10px rgba(100,120,200,.35))" alt="存錢筒">
     </div>
 
     <!-- 預算進度 -->
@@ -250,26 +329,34 @@
         <span class="period-bar-days" id="days-left"></span>
       </div>
       <div class="period-bar"><div class="period-bar-fill" id="period-fill" style="width:0%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--muted)">
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted)">
         <span id="budget-used-lbl"></span><span id="budget-total-lbl"></span>
       </div>
     </div>
 
     <div class="section-title">快捷操作</div>
     <div class="quick">
-      <button class="quick-btn exp" onclick="openModal('expense')"><span class="icon">➕</span>新增支出</button>
-      <button class="quick-btn inc" onclick="openModal('income')"><span class="icon">➕</span>新增收入</button>
+      <button class="quick-btn exp" onclick="openModal('expense')">
+        <span class="icon">➕</span>
+        <span>新增支出</span>
+        <span class="quick-btn-icons">☕ 🛒</span>
+      </button>
+      <button class="quick-btn inc" onclick="openModal('income')">
+        <span class="icon">➕</span>
+        <span>新增收入</span>
+        <span class="quick-btn-icons">💰 🤝</span>
+      </button>
     </div>
 
     <div class="side-panel">
       <div class="panel-card">
         <div class="panel-title">支出分類</div>
-        <div class="pie-wrap"><canvas id="pieChart" width="100" height="100" role="img" aria-label="支出分類"></canvas></div>
+        <div class="pie-wrap"><canvas id="pieChart" width="120" height="120" role="img" aria-label="支出分類" style="width:100px;height:100px"></canvas></div>
         <div class="cat-list" id="catLegend"></div>
       </div>
       <div class="panel-card">
         <div class="panel-title">信用卡分類</div>
-        <div class="pie-wrap"><canvas id="pieChart2" width="100" height="100" role="img" aria-label="信用卡分類"></canvas></div>
+        <div class="pie-wrap"><canvas id="pieChart2" width="120" height="120" role="img" aria-label="信用卡分類" style="width:100px;height:100px"></canvas></div>
         <div class="cat-list" id="catLegend2"></div>
       </div>
     </div>
@@ -684,20 +771,70 @@ function drawPie(canvasId, legendId, list, colors){
   const cats=Object.keys(catMap), vals=cats.map(c=>catMap[c]);
   const total=vals.reduce((s,v)=>s+v,0);
   const cv=document.getElementById(canvasId), ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,100,100);
-  if(!total){ctx.fillStyle='#EEE';ctx.beginPath();ctx.arc(50,50,40,0,Math.PI*2);ctx.fill();}
-  else{
+  const W=cv.width, H=cv.height, cx=W/2, cy=H/2;
+  const outerR=W*0.42, innerR=W*0.22;
+  ctx.clearRect(0,0,W,H);
+
+  if(!total){
+    // 空圓環
+    ctx.beginPath();ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
+    const emptyG=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
+    emptyG.addColorStop(0,'#E0E4EA');emptyG.addColorStop(1,'#CDD2DA');
+    ctx.fillStyle=emptyG;ctx.fill();
+  } else {
     let s=-Math.PI/2;
     vals.forEach((v,i)=>{
       const a=(v/total)*Math.PI*2;
-      ctx.beginPath();ctx.moveTo(50,50);ctx.arc(50,50,40,s,s+a);ctx.closePath();
-      ctx.fillStyle=colors[i%colors.length];ctx.fill();s+=a;
+      const color=colors[i%colors.length];
+      // 主要扇形
+      ctx.beginPath();
+      ctx.arc(cx,cy,outerR,s,s+a);
+      ctx.arc(cx,cy,innerR,s+a,s,true);
+      ctx.closePath();
+      // 漸層色：外深內淺
+      const grad=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
+      grad.addColorStop(0,color+'CC');
+      grad.addColorStop(0.5,color);
+      grad.addColorStop(1,color+'99');
+      ctx.fillStyle=grad;
+      ctx.fill();
+      // 扇形之間的分隔線
+      ctx.beginPath();
+      ctx.arc(cx,cy,outerR,s,s+a);
+      ctx.arc(cx,cy,innerR,s+a,s,true);
+      ctx.closePath();
+      ctx.strokeStyle='rgba(255,255,255,.8)';
+      ctx.lineWidth=1.5;
+      ctx.stroke();
+      s+=a;
     });
-    ctx.beginPath();ctx.arc(50,50,20,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();
+    // 內圈陰影（立體感）
+    const innerShadow=ctx.createRadialGradient(cx-5,cy-5,0,cx,cy,innerR);
+    innerShadow.addColorStop(0,'rgba(255,255,255,.0)');
+    innerShadow.addColorStop(0.7,'rgba(0,0,0,.04)');
+    innerShadow.addColorStop(1,'rgba(0,0,0,.12)');
+    ctx.beginPath();ctx.arc(cx,cy,innerR,0,Math.PI*2);
+    ctx.fillStyle=innerShadow;ctx.fill();
+    // 中心白圓（Neumorphism內凹感）
+    const centerG=ctx.createRadialGradient(cx-3,cy-3,0,cx,cy,innerR);
+    centerG.addColorStop(0,'rgba(255,255,255,.95)');
+    centerG.addColorStop(1,'rgba(230,235,242,.9)');
+    ctx.beginPath();ctx.arc(cx,cy,innerR-2,0,Math.PI*2);
+    ctx.fillStyle=centerG;ctx.fill();
   }
-  document.getElementById(legendId).innerHTML=cats.slice(0,4).map((c,i)=>`
-    <div class="cat-row"><span class="cat-dot" style="background:${colors[i%colors.length]}"></span>
-    <span class="cat-name">${c}</span><span class="cat-pct">${total?Math.round(vals[i]/total*100):0}%</span></div>`).join('');
+
+  // 圖例：兩欄排列，百分比用括號
+  const legendEl=document.getElementById(legendId);
+  const items=cats.slice(0,4);
+  legendEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">
+    ${items.map((c,i)=>`
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0;display:inline-block"></span>
+        <span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c}</span>
+        <span style="font-weight:700;color:var(--text)">(${total?Math.round(vals[i]/total*100):0}%)</span>
+      </div>`).join('')}
+  </div>`;
 }
 
 // ── 交易列表 ──
@@ -750,8 +887,8 @@ function refresh(){
   const p=currentPeriod();
   const txs=getPeriodTx(p);
   updateSummary();
-  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),PIE_COLORS);
-  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['#1976D2','#42A5F5','#0D47A1','#64B5F6','#1565C0','#90CAF9','#0288D1','#4FC3F7']);
+  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),['#EF5350','#FF8A80','#E53935','#FFCDD2','#C62828','#FF5252']);
+  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['#1976D2','#42A5F5','#0D47A1','#64B5F6','#1565C0','#90CAF9']);
   renderTx();
 }
 
