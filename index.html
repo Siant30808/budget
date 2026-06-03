@@ -26,8 +26,8 @@
     --neu-shadow:6px 6px 14px rgba(180,190,200,.55),-6px -6px 14px rgba(255,255,255,.85);
     --neu-inset:inset 3px 3px 7px rgba(180,190,200,.45),inset -3px -3px 7px rgba(255,255,255,.8);
   }
-  html,body{height:100%;background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text)}
-  .app{max-width:420px;margin:0 auto;min-height:100vh;background:#E8ECF1;display:flex;flex-direction:column}
+  html,body{height:100%;background:transparent;font-family:'Noto Sans TC',sans-serif;color:var(--text)}
+  .app{max-width:420px;margin:0 auto;min-height:100vh;background:transparent;display:flex;flex-direction:column}
   .app-with-bg{background:transparent!important}
   body:has(.app-with-bg){background:transparent!important}
   /* FAB 永遠保持不透明 */
@@ -1398,7 +1398,7 @@ function setHeader(){
   const now=new Date(),days=['日','一','二','三','四','五','六'];
   document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
   const h=now.getHours();
-  const g=h<6?'夜深了，注意休息！🌙':h<12?'早安！今天也要加油☀️':h<18?'下午好，記得記帳📝':'晚上好！今日帳記了嗎✨';
+  const g=h<6?'夜深了，注意休息！🌙':h<12?'早安！今天也要加油☀️':h<18?'下午好，記得記帳':'晚上好！今日帳記了嗎✨';
   document.getElementById('hdr-greeting').textContent=`你好，${cfg.username}！${g}`;
   document.title=cfg.title;
   // 浮動球時段顏色
