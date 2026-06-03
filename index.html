@@ -132,10 +132,21 @@
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
   /* FAB */
-  .fab{position:fixed;bottom:80px;right:16px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20);box-shadow:0 6px 12px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15);border:none;color:#fff;font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;transition:transform .15s,box-shadow .15s;overflow:visible;opacity:1!important;isolation:isolate}
-  .fab::before{content:'';position:absolute;top:10%;left:18%;width:50%;height:35%;border-radius:50%;background:rgba(255,255,255,.5);pointer-events:none;z-index:1}
+  .fab{position:fixed;bottom:80px;right:16px;width:62px;height:62px;border-radius:50%;
+    background:rgba(255,255,255,.25);
+    box-shadow:0 8px 32px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.45);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    color:#fff;font-size:28px;font-weight:300;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    z-index:9998;transition:transform .15s,box-shadow .15s;
+    overflow:visible;opacity:1!important;isolation:isolate;
+    text-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .fab::before{content:'';position:absolute;top:8%;left:15%;width:55%;height:38%;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(255,255,255,.55) 0%,rgba(255,255,255,.05) 100%);
+    pointer-events:none;z-index:1}
   .fab span{position:relative;z-index:2}
-  .fab:active{transform:scale(.93)}
+  .fab:active{transform:scale(.93);box-shadow:0 4px 16px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.4)}
   /* 鍵盤彈出時隱藏 FAB */
   @media (max-height:500px){.fab{display:none}}
   /* Modal 底部加padding避免被導航列遮住 */
@@ -1401,10 +1412,20 @@ function setHeader(){
   const g=h<6?'夜深了，注意休息！🌙':h<12?'早安！今天也要加油☀️':h<18?'下午好，記得記帳':'晚上好！今日帳記了嗎✨';
   document.getElementById('hdr-greeting').textContent=`你好，${cfg.username}！${g}`;
   document.title=cfg.title;
-  // 浮動球時段顏色
-  const theme=getTheme(h);
+  // 套用時段主題色到 FAB 光暈
   const fab=document.getElementById('fab');
-  if(fab) fab.style.background=theme.fab;
+  if(fab){
+    const glows={
+      night:'0 8px 32px rgba(63,81,181,.4),inset 0 1px 0 rgba(255,255,255,.6)',
+      morning:'0 8px 32px rgba(230,81,0,.35),inset 0 1px 0 rgba(255,255,255,.6)',
+      noon:'0 8px 32px rgba(21,101,192,.35),inset 0 1px 0 rgba(255,255,255,.6)',
+      evening:'0 8px 32px rgba(123,31,162,.4),inset 0 1px 0 rgba(255,255,255,.6)',
+      latenight:'0 8px 32px rgba(63,81,181,.4),inset 0 1px 0 rgba(255,255,255,.6)'
+    };
+    const themeKey=h<6?'night':h<12?'morning':h<17?'noon':h<20?'evening':'latenight';
+    fab.style.boxShadow=glows[themeKey];
+    fab.style.background='rgba(255,255,255,.25)';
+  }
 }
 
 // ── 初始化 ──
