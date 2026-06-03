@@ -115,8 +115,9 @@
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
   /* FAB */
-  .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#43A047,#1B5E20);box-shadow:0 4px 16px rgba(46,125,50,.4);border:none;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;transition:transform .15s}
-  .fab:active{transform:scale(.93)}
+  .fab{position:fixed;bottom:80px;right:20px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20);box-shadow:0 6px 12px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15);border:none;color:#fff;font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;transition:transform .15s, box-shadow .15s;overflow:hidden}
+  .fab::before{content:'';position:absolute;top:8%;left:15%;width:55%;height:38%;border-radius:50%;background:radial-gradient(ellipse at 40% 30%,rgba(255,255,255,.75),rgba(255,255,255,.05));pointer-events:none}
+  .fab:active{transform:scale(.93);box-shadow:0 2px 6px rgba(0,0,0,.4),inset 0 1px 2px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15)}
   /* 鍵盤彈出時隱藏 FAB */
   @media (max-height:500px){.fab{display:none}}
   /* Modal 底部加padding避免被導航列遮住 */
@@ -165,8 +166,7 @@
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
-  /* FAB 不受背景圖影響，保持綠色 */
-  .fab{background:linear-gradient(135deg,#43A047,#1B5E20)!important;}
+  /* FAB 顏色由 JS 時段主題控制 */
   .app-with-bg .nav,.app-with-bg .settings-section{background:rgba(255,255,255,.88);backdrop-filter:blur(12px)}
   .app-with-bg .header{background:rgba(27,94,32,.85);backdrop-filter:blur(8px)}
   .app-with-bg .cc-header{background:rgba(13,71,161,.85);backdrop-filter:blur(8px)}
@@ -996,24 +996,24 @@ function showToast(msg){
 
 // 時段主題色
 const TIME_THEMES={
-  night: { // 凌晨 0~5 深藍紫夜晚
+  night:{
     header:'linear-gradient(135deg,#1A237E,#283593,#303F9F)',
-    fab:'linear-gradient(135deg,#3949AB,#1A237E)',
+    fab:'radial-gradient(circle at 35% 35%,#7986CB,#303F9F 60%,#1A237E)',
     dot:'#9FA8DA'
   },
-  morning: { // 早上 6~11 橙黃朝陽
+  morning:{
     header:'linear-gradient(135deg,#E65100,#F57C00,#FF8F00)',
-    fab:'linear-gradient(135deg,#FF8F00,#E65100)',
+    fab:'radial-gradient(circle at 35% 35%,#FFB74D,#F57C00 60%,#E65100)',
     dot:'#FFE082'
   },
-  afternoon: { // 下午 12~17 深綠
+  afternoon:{
     header:'linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C)',
-    fab:'linear-gradient(135deg,#43A047,#1B5E20)',
+    fab:'radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20)',
     dot:'#A5D6A7'
   },
-  evening: { // 晚上 18~23 深紫靛藍
+  evening:{
     header:'linear-gradient(135deg,#4A148C,#6A1B9A,#7B1FA2)',
-    fab:'linear-gradient(135deg,#8E24AA,#4A148C)',
+    fab:'radial-gradient(circle at 35% 35%,#CE93D8,#7B1FA2 60%,#4A148C)',
     dot:'#CE93D8'
   }
 };
