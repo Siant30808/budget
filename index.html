@@ -370,7 +370,7 @@
 
 </div>
 
-<button class="fab" onclick="openModal('expense')" aria-label="新增">＋</button>
+<button class="fab" id="fab" aria-label="新增">＋</button>
 
 <div class="nav">
   <div class="nav-item active" id="nav-home" onclick="switchPage('home')"><div class="nav-icon">🏠</div><div class="nav-label">主頁</div></div>
@@ -439,6 +439,108 @@ save();
 let curType='expense', curPay='現金';
 
 function save(){ localStorage.setItem(LS_DATA,JSON.stringify(txData)); localStorage.setItem(LS_CFG,JSON.stringify(cfg)); }
+
+// ── 可拖曳浮動球 ──
+(function initDraggableFab(){
+  const fab=document.getElementById('fab');
+  let isDragging=false, startX, startY, origX, origY, moved=false;
+  const LS_FAB='fab_pos';
+
+  // 讀取儲存位置
+  try{
+    const pos=JSON.parse(localStorage.getItem(LS_FAB)||'null');
+    if(pos){
+      fab.style.right='auto';
+      fab.style.bottom='auto';
+      fab.style.left=pos.x+'px';
+      fab.style.top=pos.y+'px';
+    }
+  }catch(e){}
+
+  function savePos(){
+    const rect=fab.getBoundingClientRect();
+    localStorage.setItem(LS_FAB,JSON.stringify({x:rect.left,y:rect.top}));
+  }
+
+  function clamp(val,min,max){return Math.min(Math.max(val,min),max)}
+
+  // Touch events
+  fab.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    startX=t.clientX; startY=t.clientY;
+    const rect=fab.getBoundingClientRect();
+    origX=rect.left; origY=rect.top;
+    isDragging=true; moved=false;
+    fab.style.right='auto'; fab.style.bottom='auto';
+    fab.style.left=origX+'px'; fab.style.top=origY+'px';
+    fab.style.transition='none';
+  },{passive:true});
+
+  fab.addEventListener('touchmove',e=>{
+    if(!isDragging)return;
+    const t=e.touches[0];
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(Math.abs(dx)>5||Math.abs(dy)>5) moved=true;
+    const newX=clamp(origX+dx, 0, window.innerWidth-56);
+    const newY=clamp(origY+dy, 0, window.innerHeight-56);
+    fab.style.left=newX+'px';
+    fab.style.top=newY+'px';
+    e.preventDefault();
+  },{passive:false});
+
+  fab.addEventListener('touchend',e=>{
+    isDragging=false;
+    fab.style.transition='transform .15s';
+    if(!moved){
+      // 短按 = 開啟記帳
+      openModal('expense');
+    } else {
+      // 拖曳結束 = 吸附到左右邊緣
+      const rect=fab.getBoundingClientRect();
+      const cx=rect.left+28;
+      const snapX=cx < window.innerWidth/2 ? 12 : window.innerWidth-68;
+      fab.style.left=snapX+'px';
+      setTimeout(savePos,300);
+    }
+  });
+
+  // Mouse events (電腦用)
+  fab.addEventListener('mousedown',e=>{
+    startX=e.clientX; startY=e.clientY;
+    const rect=fab.getBoundingClientRect();
+    origX=rect.left; origY=rect.top;
+    isDragging=true; moved=false;
+    fab.style.right='auto'; fab.style.bottom='auto';
+    fab.style.left=origX+'px'; fab.style.top=origY+'px';
+    fab.style.transition='none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove',e=>{
+    if(!isDragging)return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>5||Math.abs(dy)>5) moved=true;
+    const newX=clamp(origX+dx, 0, window.innerWidth-56);
+    const newY=clamp(origY+dy, 0, window.innerHeight-56);
+    fab.style.left=newX+'px';
+    fab.style.top=newY+'px';
+  });
+
+  document.addEventListener('mouseup',e=>{
+    if(!isDragging)return;
+    isDragging=false;
+    fab.style.transition='transform .15s';
+    if(!moved){
+      openModal('expense');
+    } else {
+      const rect=fab.getBoundingClientRect();
+      const cx=rect.left+28;
+      const snapX=cx < window.innerWidth/2 ? 12 : window.innerWidth-68;
+      fab.style.left=snapX+'px';
+      setTimeout(savePos,300);
+    }
+  });
+})();
 
 // ── 自動跨期結算：新週期開始時把上期最終存款帶入基準 ──
 function checkPeriodRollover(){
