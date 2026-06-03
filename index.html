@@ -725,8 +725,24 @@ function checkPeriodRollover(){
   try{
     const p=currentPeriod();
     const lastStart=cfg.lastPeriodStart||'';
-    if(lastStart && lastStart !== p.startStr){
-      // 週期已切換，計算上期最終存款
+
+    // 用 Date 物件比較，容忍 1.5 天內的時區格式誤差
+    const lastStartMs = lastStart ? new Date(lastStart).getTime() : 0;
+    const pStartMs    = p.start.getTime();
+    const isSamePeriod = !lastStart || Math.abs(lastStartMs - pStartMs) < 86400000 * 1.5;
+
+    if(!lastStart){
+      // 第一次記錄週期起始
+      cfg.lastPeriodStart=p.startStr;
+      cfg.lastPeriodEnd=p.endStr;
+      save();
+    } else if(isSamePeriod && lastStart !== p.startStr){
+      // 同一週期，但舊格式有時區偏移 → 靜默修正，不觸發結算
+      cfg.lastPeriodStart=p.startStr;
+      cfg.lastPeriodEnd=p.endStr;
+      save();
+    } else if(!isSamePeriod){
+      // 真正跨期，計算上期最終存款
       const prevPeriod={startStr:lastStart, endStr:cfg.lastPeriodEnd||''};
       const prevTxs=txData.filter(t=>t.date>=prevPeriod.startStr&&t.date<=prevPeriod.endStr);
       const prevInc=prevTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
@@ -736,12 +752,7 @@ function checkPeriodRollover(){
       cfg.lastPeriodStart=p.startStr;
       cfg.lastPeriodEnd=p.endStr;
       save();
-      showToast(`🔄 已自動結算上期，存款基準更新為 NT$${Math.round(finalSavings).toLocaleString()}`);
-    } else if(!lastStart){
-      // 第一次記錄週期起始
-      cfg.lastPeriodStart=p.startStr;
-      cfg.lastPeriodEnd=p.endStr;
-      save();
+      showToast(`🔄 已自動結算上期，存款基準更新為 NT${Math.round(finalSavings).toLocaleString()}`);
     }
   }catch(e){}
 }
