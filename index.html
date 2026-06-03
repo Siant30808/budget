@@ -1128,9 +1128,7 @@ function removeBg(){
 // ── 報表頁 ──
 function renderReport(){
   const allPeriods = getAllPeriods().slice().reverse(); // 由舊到新
-  const cp = currentPeriod();
 
-  // 計算每期的 income / cashExp
   const stats = allPeriods.map(p => {
     const txs = getPeriodTx(p);
     const income = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
@@ -1138,32 +1136,35 @@ function renderReport(){
     return { p, income, cashExp, net: income - cashExp };
   });
 
-  // cfg.savings = 本期月初餘額，向前/後推算其他期
-  const cpIdx = stats.findIndex(s => s.p.startStr === cp.startStr);
-  const startBals = new Array(stats.length);
-  startBals[cpIdx] = cfg.savings;
-  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i+1].net;
-  for(let i = cpIdx+1; i < stats.length; i++) startBals[i] = startBals[i-1] + stats[i-1].net;
-
   const tbody = document.getElementById('report-tbody');
   if(stats.length === 0){
     tbody.innerHTML = '<tr><td colspan="4" class="report-empty">尚無記帳資料</td></tr>';
     return;
   }
 
+  // 用 Date 物件比對當前週期，避免 toISOString 時區偏移導致 index = -1
+  const now = new Date();
+  let cpIdx = stats.findIndex(s => now >= s.p.start && now <= s.p.end);
+  if(cpIdx < 0) cpIdx = stats.length - 1; // 找不到就用最後一期
+
+  // cfg.savings = 本期月初餘額，向前/後推算其他期
+  const startBals = new Array(stats.length);
+  startBals[cpIdx] = cfg.savings;
+  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i+1].net;
+  for(let i = cpIdx+1; i < stats.length; i++) startBals[i] = startBals[i-1] + stats[i-1].net;
+
   // 由新到舊顯示
   tbody.innerHTML = stats.slice().reverse().map((s, idx) => {
     const realIdx = stats.length - 1 - idx;
     const openBal = startBals[realIdx];
     const closeBal = openBal + s.net;
-    const isCurrent = s.p.startStr === cp.startStr;
+    const isCurrent = realIdx === cpIdx;
     const openCls = openBal < 0 ? 'report-amt-neg' : 'report-amt-pos';
-    const expCls = 'report-amt-neg';
     const closeCls = closeBal < 0 ? 'report-amt-neg' : 'report-amt-pos';
     return `<tr${isCurrent?' class="current-row"':''}>
       <td>${s.p.label}</td>
       <td class="${openCls}">${fmt(openBal)}</td>
-      <td class="${expCls}">${fmt(s.cashExp)}</td>
+      <td class="report-amt-neg">${fmt(s.cashExp)}</td>
       <td class="${closeCls}">${fmt(closeBal)}</td>
     </tr>`;
   }).join('');
