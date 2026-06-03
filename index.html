@@ -746,6 +746,11 @@ function checkPeriodRollover(){
   }catch(e){}
 }
 
+// 本地日期字串（避免 toISOString UTC 偏移）
+function localDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 // ── 週期計算（發薪日到次月發薪日前一天）──
 function getPeriod(dateStr){
   try{
@@ -761,8 +766,8 @@ function getPeriod(dateStr){
       pEnd=new Date(y,m,pd-1);
     }
     return {start:pStart, end:pEnd,
-      startStr:pStart.toISOString().slice(0,10),
-      endStr:pEnd.toISOString().slice(0,10),
+      startStr:localDateStr(pStart),
+      endStr:localDateStr(pEnd),
       label:`${pStart.getMonth()+1}/${pStart.getDate()} ~ ${pEnd.getMonth()+1}/${pEnd.getDate()}`
     };
   }catch(e){
@@ -772,8 +777,8 @@ function getPeriod(dateStr){
     const pStart=new Date(y,m,1);
     const pEnd=new Date(y,m+1,0);
     return {start:pStart, end:pEnd,
-      startStr:pStart.toISOString().slice(0,10),
-      endStr:pEnd.toISOString().slice(0,10),
+      startStr:localDateStr(pStart),
+      endStr:localDateStr(pEnd),
       label:`${pStart.getMonth()+1}/1 ~ ${pEnd.getMonth()+1}/${pEnd.getDate()}`
     };
   }
@@ -825,7 +830,7 @@ function updateSummary(){
   // 計算上一期結餘
   const prevEnd=new Date(p.startStr);
   prevEnd.setDate(prevEnd.getDate()-1);
-  const prevP=getPeriod(prevEnd.toISOString().slice(0,10));
+  const prevP=getPeriod(localDateStr(prevEnd));
   const prevTxs=getPeriodTx(prevP);
   const prevInc=prevTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const prevCash=prevTxs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
@@ -971,8 +976,8 @@ function groupByDay(list){
   return Object.entries(m).sort((a,b)=>b[0].localeCompare(a[0]));
 }
 function dayLabel(d){
-  const today=new Date().toISOString().slice(0,10);
-  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const today=localDateStr(new Date());
+  const yest=localDateStr(new Date(Date.now()-86400000));
   const[,mo,day]=d.split('-');
   const b=`${parseInt(mo)}月${parseInt(day)}日`;
   return d===today?b+' (今天)':d===yest?b+' (昨日)':b;
@@ -1020,7 +1025,7 @@ function refresh(){
 // ── 記帳 Modal ──
 function openModal(type){
   curType=type;curPay='現金';
-  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-date').value=localDateStr(new Date());
   document.getElementById('f-amount').value='';document.getElementById('f-note').value='';
   updateModalUI();
   document.getElementById('modal').classList.add('open');
@@ -1049,7 +1054,7 @@ function addTx(){
   if(!amt||amt<=0){showToast('❌ 請輸入有效金額');return}
   const now=new Date();
   // 統一日期格式，把 / 換成 -
-  const rawDate=document.getElementById('f-date').value||now.toISOString().slice(0,10);
+  const rawDate=document.getElementById('f-date').value||localDateStr(now);
   const txDate=rawDate.replace(/\//g,'-');
   txData.unshift({id:Date.now(),type:curType,
     cat:document.getElementById('f-cat').value,amount:amt,
