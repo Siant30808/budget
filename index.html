@@ -832,6 +832,9 @@ function updateSummary(){
 }
 
 // ── 圓餅圖 ──
+// 取消舊動畫用
+const _pieAnimMap={};
+
 function drawPie(canvasId, legendId, list, colors){
   const catMap={};
   list.forEach(t=>catMap[t.cat]=(catMap[t.cat]||0)+t.amount);
@@ -840,68 +843,128 @@ function drawPie(canvasId, legendId, list, colors){
   const cv=document.getElementById(canvasId), ctx=cv.getContext('2d');
   const W=cv.width, H=cv.height, cx=W/2, cy=H/2;
   const outerR=W*0.42, innerR=W*0.22;
-  ctx.clearRect(0,0,W,H);
+
+  // 圖例先渲染（不受動畫影響）
+  const legendEl=document.getElementById(legendId);
+  const items=cats.slice(0,4);
+  legendEl.innerHTML=total?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">
+    ${items.map((c,i)=>`
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0;display:inline-block"></span>
+        <span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c}</span>
+        <span style="font-weight:700;color:var(--text)">(${Math.round(vals[i]/total*100)}%)</span>
+      </div>`).join('')}
+  </div>`:'';
+
+  // 停止舊動畫
+  if(_pieAnimMap[canvasId]) cancelAnimationFrame(_pieAnimMap[canvasId]);
 
   if(!total){
-    // 空圓環
+    ctx.clearRect(0,0,W,H);
     ctx.beginPath();ctx.arc(cx,cy,outerR,0,Math.PI*2);
     ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
     const emptyG=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
     emptyG.addColorStop(0,'#E0E4EA');emptyG.addColorStop(1,'#CDD2DA');
     ctx.fillStyle=emptyG;ctx.fill();
-  } else {
-    let s=-Math.PI/2;
+    return;
+  }
+
+  // ── 動畫參數 ──
+  const ANIM_MS   = 900;   // 展開動畫時長
+  const GLOW_MS   = 2200;  // 閃光循環週期
+  const startTime = performance.now();
+  let glowAngle   = 0;     // 閃光掃描角度（弧度）
+
+  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+
+  function renderFrame(now){
+    const elapsed = now - startTime;
+    const progress= Math.min(1, elapsed / ANIM_MS);
+    const ep      = easeOutCubic(progress);  // 展開進度 0→1
+
+    // 閃光角度（動畫完成後繼續跑）
+    const glowT   = ((now % GLOW_MS) / GLOW_MS) * Math.PI * 2;
+    glowAngle     = glowT - Math.PI/2;
+
+    ctx.clearRect(0,0,W,H);
+
+    // ── 1. 展開扇形 ──
+    let s = -Math.PI/2;
     vals.forEach((v,i)=>{
-      const a=(v/total)*Math.PI*2;
-      const color=colors[i%colors.length];
-      // 主要扇形
+      const fullA = (v/total)*Math.PI*2;
+      const a     = fullA * ep;            // 依進度縮放弧度
+      const color = colors[i%colors.length];
+
       ctx.beginPath();
       ctx.arc(cx,cy,outerR,s,s+a);
       ctx.arc(cx,cy,innerR,s+a,s,true);
       ctx.closePath();
-      // 漸層色：外深內淺
       const grad=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
       grad.addColorStop(0,color+'CC');
       grad.addColorStop(0.5,color);
       grad.addColorStop(1,color+'99');
-      ctx.fillStyle=grad;
-      ctx.fill();
-      // 扇形之間的分隔線
+      ctx.fillStyle=grad; ctx.fill();
+
+      // 分隔線
       ctx.beginPath();
       ctx.arc(cx,cy,outerR,s,s+a);
       ctx.arc(cx,cy,innerR,s+a,s,true);
       ctx.closePath();
       ctx.strokeStyle='rgba(255,255,255,.8)';
-      ctx.lineWidth=1.5;
-      ctx.stroke();
-      s+=a;
+      ctx.lineWidth=1.5; ctx.stroke();
+
+      s += fullA * ep;  // 下一段起點也隨進度移動
     });
-    // 內圈陰影（立體感）
+
+    // ── 5. 閃光掃描（展開完成後才出現）──
+    if(progress >= 1){
+      const glowWidth = 0.38;  // 閃光扇角寬度（弧度）
+      ctx.save();
+      ctx.globalCompositeOperation='source-atop';
+      const gx = cx + Math.cos(glowAngle) * (innerR + outerR) * 0.5;
+      const gy = cy + Math.sin(glowAngle) * (innerR + outerR) * 0.5;
+      const glowG = ctx.createRadialGradient(gx,gy,0,gx,gy,outerR*0.7);
+      glowG.addColorStop(0,'rgba(255,255,255,.55)');
+      glowG.addColorStop(0.4,'rgba(255,255,255,.18)');
+      glowG.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,outerR, glowAngle-glowWidth, glowAngle+glowWidth);
+      ctx.closePath();
+      ctx.fillStyle=glowG; ctx.fill();
+      ctx.restore();
+    }
+
+    // 內圈立體感
     const innerShadow=ctx.createRadialGradient(cx-5,cy-5,0,cx,cy,innerR);
-    innerShadow.addColorStop(0,'rgba(255,255,255,.0)');
+    innerShadow.addColorStop(0,'rgba(255,255,255,0)');
     innerShadow.addColorStop(0.7,'rgba(0,0,0,.04)');
     innerShadow.addColorStop(1,'rgba(0,0,0,.12)');
     ctx.beginPath();ctx.arc(cx,cy,innerR,0,Math.PI*2);
     ctx.fillStyle=innerShadow;ctx.fill();
-    // 中心白圓（Neumorphism內凹感）
+
+    // 中心白圓
     const centerG=ctx.createRadialGradient(cx-3,cy-3,0,cx,cy,innerR);
     centerG.addColorStop(0,'rgba(255,255,255,.95)');
     centerG.addColorStop(1,'rgba(230,235,242,.9)');
     ctx.beginPath();ctx.arc(cx,cy,innerR-2,0,Math.PI*2);
     ctx.fillStyle=centerG;ctx.fill();
+
+    // ── 3. 中心數字滾動 ──
+    const displayAmt = Math.round(total * ep);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#1A1A1A';
+    ctx.font=`bold ${W*0.13}px "Noto Sans TC",sans-serif`;
+    const label = displayAmt>=10000
+      ? (displayAmt/10000).toFixed(1)+'萬'
+      : displayAmt.toLocaleString();
+    ctx.fillText(label, cx, cy);
+
+    // 繼續跑（展開完成後只跑閃光）
+    _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
   }
 
-  // 圖例：兩欄排列，百分比用括號
-  const legendEl=document.getElementById(legendId);
-  const items=cats.slice(0,4);
-  legendEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">
-    ${items.map((c,i)=>`
-      <div style="display:flex;align-items:center;gap:4px;font-size:10px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0;display:inline-block"></span>
-        <span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c}</span>
-        <span style="font-weight:700;color:var(--text)">(${total?Math.round(vals[i]/total*100):0}%)</span>
-      </div>`).join('')}
-  </div>`;
+  _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
 }
 
 // ── 交易列表 ──
