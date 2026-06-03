@@ -24,8 +24,10 @@
   }
   html,body{height:100%;background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text)}
   .app{max-width:420px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
-  .app-with-bg,.app-with-bg~*{background:transparent!important}
+  .app-with-bg{background:transparent!important}
   body:has(.app-with-bg){background:transparent!important}
+  /* FAB 永遠保持不透明 */
+  .fab{opacity:1!important;background-color:transparent}
   .header{background:linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C);padding:20px 20px 28px;color:#fff}
   .header-top{display:flex;justify-content:space-between;align-items:flex-start}
   .header-date{font-size:13px;opacity:.85;margin-bottom:4px}
@@ -193,18 +195,23 @@
 
   <!-- 主頁 -->
   <div class="page active" id="page-home">
-    <div class="header">
-      <div class="header-top">
-        <div>
-          <div class="header-date" id="hdr-date"></div>
-          <div class="header-greeting" id="hdr-greeting"></div>
+    <div class="header" style="position:relative;overflow:hidden">
+      <!-- SVG 場景背景 -->
+      <svg id="hdr-scene" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="xMidYMid slice" viewBox="0 0 400 120"></svg>
+      <!-- 文字內容 -->
+      <div style="position:relative;z-index:1">
+        <div class="header-top">
+          <div>
+            <div class="header-date" id="hdr-date"></div>
+            <div class="header-greeting" id="hdr-greeting"></div>
+          </div>
+          <div class="sum-savings" onclick="openSavingsEdit()" style="text-align:right;cursor:pointer">
+            <div style="font-size:10px;opacity:.8">🏦 存款（自動）</div>
+            <div style="font-size:15px;font-weight:700" id="hdr-savings">NT$0</div>
+          </div>
         </div>
-        <div class="sum-savings" onclick="openSavingsEdit()" style="text-align:right;cursor:pointer">
-          <div style="font-size:10px;opacity:.8">🏦 存款（自動）</div>
-          <div style="font-size:15px;font-weight:700" id="hdr-savings">NT$0</div>
-        </div>
+        <div class="header-period"><span class="period-dot"></span><span id="hdr-period">本期計算中</span></div>
       </div>
-      <div class="header-period"><span class="period-dot"></span><span id="hdr-period">本期計算中</span></div>
     </div>
 
     <div class="summary">
@@ -997,24 +1004,29 @@ function showToast(msg){
 
 // 時段主題色
 const TIME_THEMES={
-  night:{
-    header:'linear-gradient(135deg,#1A237E,#283593,#303F9F)',
-    fab:'radial-gradient(circle at 35% 35%,#7986CB,#303F9F 60%,#1A237E)',
+  night:{  // 0~5 深夜
+    header:'linear-gradient(135deg,#050A1A,#0D1B4E,#1A237E)',
+    fab:'radial-gradient(circle at 35% 35%,#5C6BC0,#1A237E 60%,#050A1A)',
     dot:'#9FA8DA'
   },
-  morning:{
+  morning:{  // 6~11 早上
     header:'linear-gradient(135deg,#E65100,#F57C00,#FF8F00)',
     fab:'radial-gradient(circle at 35% 35%,#FFB74D,#F57C00 60%,#E65100)',
     dot:'#FFE082'
   },
-  afternoon:{
-    header:'linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C)',
-    fab:'radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20)',
-    dot:'#A5D6A7'
+  noon:{  // 12~16 中午
+    header:'linear-gradient(135deg,#1565C0,#1976D2,#42A5F5)',
+    fab:'radial-gradient(circle at 35% 35%,#90CAF9,#1976D2 60%,#1565C0)',
+    dot:'#FFF176'
   },
-  evening:{
-    header:'linear-gradient(135deg,#4A148C,#6A1B9A,#7B1FA2)',
-    fab:'radial-gradient(circle at 35% 35%,#CE93D8,#7B1FA2 60%,#4A148C)',
+  evening:{  // 17~19 傍晚
+    header:'linear-gradient(135deg,#1A237E,#7B1FA2,#E64A19)',
+    fab:'radial-gradient(circle at 35% 35%,#FF8A65,#E64A19 60%,#7B1FA2)',
+    dot:'#FFCCBC'
+  },
+  latenight:{  // 20~23 晚上
+    header:'linear-gradient(135deg,#050A1A,#0D1B4E,#1A237E)',
+    fab:'radial-gradient(circle at 35% 35%,#5C6BC0,#1A237E 60%,#050A1A)',
     dot:'#CE93D8'
   }
 };
@@ -1022,8 +1034,116 @@ const TIME_THEMES={
 function getTheme(h){
   if(h<6) return TIME_THEMES.night;
   if(h<12) return TIME_THEMES.morning;
-  if(h<18) return TIME_THEMES.afternoon;
-  return TIME_THEMES.evening;
+  if(h<17) return TIME_THEMES.noon;
+  if(h<20) return TIME_THEMES.evening;
+  return TIME_THEMES.latenight;
+}
+
+// ── SVG 場景 ──
+function drawScene(h){
+  const svg=document.getElementById('hdr-scene');
+  if(!svg)return;
+  let content='';
+
+  if(h>=6&&h<12){
+    // 早上：旭日東升與柔和雲朵
+    content=`
+      <!-- 天空漸層 -->
+      <defs>
+        <linearGradient id="skyM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FF8F00"/><stop offset="60%" stop-color="#FFB74D"/><stop offset="100%" stop-color="#FFE082"/>
+        </linearGradient>
+        <radialGradient id="sunM" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="#FFF9C4"/><stop offset="40%" stop-color="#FFEE58"/><stop offset="100%" stop-color="#FF8F00" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="400" height="120" fill="url(#skyM)"/>
+      <!-- 光芒 -->
+      ${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>`<line x1="200" y1="95" x2="${200+120*Math.cos(a*Math.PI/180)}" y2="${95+120*Math.sin(a*Math.PI/180)}" stroke="rgba(255,255,200,.2)" stroke-width="8"/>`).join('')}
+      <!-- 太陽 -->
+      <circle cx="200" cy="95" r="45" fill="url(#sunM)"/>
+      <circle cx="200" cy="95" r="22" fill="#FFEE58"/>
+      <!-- 雲朵 -->
+      <g opacity=".9">
+        <ellipse cx="60" cy="40" rx="35" ry="16" fill="rgba(255,255,255,.85)"/>
+        <ellipse cx="45" cy="44" rx="20" ry="12" fill="rgba(255,255,255,.85)"/>
+        <ellipse cx="80" cy="44" rx="22" ry="11" fill="rgba(255,255,255,.85)"/>
+      </g>
+      <g opacity=".8">
+        <ellipse cx="310" cy="30" rx="28" ry="13" fill="rgba(255,255,255,.75)"/>
+        <ellipse cx="295" cy="34" rx="18" ry="10" fill="rgba(255,255,255,.75)"/>
+        <ellipse cx="330" cy="34" rx="16" ry="9" fill="rgba(255,255,255,.75)"/>
+      </g>`;
+  } else if(h>=12&&h<17){
+    // 中午：烈日當空，光芒四射
+    content=`
+      <defs>
+        <linearGradient id="skyN" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1565C0"/><stop offset="100%" stop-color="#42A5F5"/>
+        </linearGradient>
+        <radialGradient id="sunN" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#FFF176"/><stop offset="100%" stop-color="#FFEE58" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="400" height="120" fill="url(#skyN)"/>
+      <!-- 強烈光芒 -->
+      ${[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340].map(a=>`<line x1="200" y1="-10" x2="${200+160*Math.cos(a*Math.PI/180)}" y2="${-10+160*Math.sin(a*Math.PI/180)}" stroke="rgba(255,255,200,.15)" stroke-width="6"/>`).join('')}
+      <circle cx="200" cy="-10" r="70" fill="url(#sunN)"/>
+      <circle cx="200" cy="-10" r="28" fill="#FFF9C4"/>
+      <!-- 薄雲 -->
+      <g opacity=".5">
+        <ellipse cx="80" cy="70" rx="40" ry="12" fill="rgba(255,255,255,.6)"/>
+        <ellipse cx="320" cy="55" rx="32" ry="10" fill="rgba(255,255,255,.6)"/>
+      </g>`;
+  } else if(h>=17&&h<20){
+    // 下午/傍晚：夕陽西下，晚霞
+    content=`
+      <defs>
+        <linearGradient id="skyE" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1A237E"/><stop offset="40%" stop-color="#7B1FA2"/><stop offset="75%" stop-color="#E64A19"/><stop offset="100%" stop-color="#FF8A65"/>
+        </linearGradient>
+        <radialGradient id="sunE" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="#FFCCBC"/><stop offset="40%" stop-color="#FF7043"/><stop offset="100%" stop-color="#E64A19" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="400" height="120" fill="url(#skyE)"/>
+      <!-- 夕陽 -->
+      <circle cx="60" cy="100" r="50" fill="url(#sunE)"/>
+      <circle cx="60" cy="100" r="20" fill="#FFCCBC"/>
+      <!-- 晚霞雲層 -->
+      <ellipse cx="200" cy="75" rx="120" ry="18" fill="rgba(255,100,50,.35)"/>
+      <ellipse cx="300" cy="55" rx="80" ry="14" fill="rgba(255,80,30,.3)"/>
+      <ellipse cx="100" cy="60" rx="70" ry="12" fill="rgba(200,50,100,.25)"/>
+      <!-- 幾顆早星 -->
+      ${[[350,15],[380,35],[330,25],[370,50]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.5" fill="rgba(255,255,255,.8)"/>`).join('')}`;
+  } else {
+    // 晚上：彎月與繁星
+    content=`
+      <defs>
+        <linearGradient id="skyNt" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#050A1A"/><stop offset="100%" stop-color="#1A237E"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="120" fill="url(#skyNt)"/>
+      <!-- 繁星 -->
+      ${Array.from({length:40},(_,i)=>{
+        const x=Math.sin(i*137.508)*200+200;
+        const y=Math.cos(i*97.3)*60+35;
+        const r=Math.random()*1.5+0.5;
+        const op=Math.random()*0.6+0.3;
+        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(255,255,255,${op.toFixed(2)})"/>`;
+      }).join('')}
+      <!-- 彎月 -->
+      <circle cx="320" cy="30" r="22" fill="#FFF9C4"/>
+      <circle cx="332" cy="24" r="18" fill="#0D1B4E"/>
+      <!-- 月暈 -->
+      <circle cx="320" cy="30" r="28" fill="none" stroke="rgba(255,249,196,.15)" stroke-width="4"/>
+      <!-- 流星 -->
+      <line x1="80" y1="15" x2="120" y2="35" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="150" y1="8" x2="180" y2="22" stroke="rgba(255,255,255,.4)" stroke-width="1" stroke-linecap="round"/>`;
+  }
+
+  svg.innerHTML=content;
 }
 
 function setHeader(){
@@ -1040,6 +1160,9 @@ function setHeader(){
   document.querySelector('.period-dot').style.background=theme.dot;
   const fab=document.getElementById('fab');
   if(fab) fab.style.background=theme.fab;
+
+  // 繪製 SVG 場景
+  drawScene(h);
 }
 
 // ── 初始化 ──
