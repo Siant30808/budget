@@ -943,13 +943,13 @@ function drawPie(canvasId, legendId, list, colors){
     if(progress >= 1){
       const glowWidth = 0.38;  // 閃光扇角寬度（弧度）
       ctx.save();
-      ctx.globalCompositeOperation='source-atop';
+      ctx.globalCompositeOperation='multiply';
       const gx = cx + Math.cos(glowAngle) * (innerR + outerR) * 0.5;
       const gy = cy + Math.sin(glowAngle) * (innerR + outerR) * 0.5;
       const glowG = ctx.createRadialGradient(gx,gy,0,gx,gy,outerR*0.7);
-      glowG.addColorStop(0,'rgba(255,255,255,.55)');
-      glowG.addColorStop(0.4,'rgba(255,255,255,.18)');
-      glowG.addColorStop(1,'rgba(255,255,255,0)');
+      glowG.addColorStop(0,'rgba(255,240,160,.82)');
+      glowG.addColorStop(0.4,'rgba(255,248,200,.38)');
+      glowG.addColorStop(1,'rgba(255,255,220,0)');
       ctx.beginPath();
       ctx.moveTo(cx,cy);
       ctx.arc(cx,cy,outerR, glowAngle-glowWidth, glowAngle+glowWidth);
@@ -1274,7 +1274,7 @@ function renderReport(){
     for(let i=0; i<22; i++){
       const angle  = Math.random() * Math.PI * 2;
       const speed  = 1.2 + Math.random() * 2.8;
-      const size   = 2 + Math.random() * 3;
+      const size   = 0.8 + Math.random() * 1.4;
       particles.push({
         x: cx, y: cy,
         vx: Math.cos(angle) * speed,
@@ -1294,12 +1294,12 @@ function renderReport(){
       p.vx *= 0.96; p.vy *= 0.96;
       p.alpha -= p.decay;
       // 白色光暈粒子
-      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*2.5);
+      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*1.6);
       g.addColorStop(0, `rgba(255,255,255,${p.alpha})`);
       g.addColorStop(0.5, `rgba(220,225,255,${p.alpha*0.5})`);
       g.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r*2.5, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, p.r*1.6, 0, Math.PI*2);
       ctx.fillStyle = g;
       ctx.fill();
     });
