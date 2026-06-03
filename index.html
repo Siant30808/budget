@@ -132,22 +132,25 @@
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
   /* FAB */
-  .fab{position:fixed;bottom:80px;right:16px;width:62px;height:62px;border-radius:50%;
+  .fab{position:fixed;bottom:80px;right:16px;width:64px;height:64px;border-radius:50%;
     background:rgba(255,255,255,.25);
-    box-shadow:0 8px 32px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.15);
-    border:1px solid rgba(255,255,255,.45);
-    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    color:#fff;font-size:28px;font-weight:300;cursor:pointer;
+    border:1px solid rgba(255,255,255,.5);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    color:#fff;font-size:28px;font-weight:200;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
     z-index:9998;transition:transform .15s,box-shadow .15s;
-    overflow:visible;opacity:1!important;isolation:isolate;
-    text-shadow:0 1px 4px rgba(0,0,0,.3)}
-  .fab::before{content:'';position:absolute;top:8%;left:15%;width:55%;height:38%;border-radius:50%;
-    background:radial-gradient(ellipse,rgba(255,255,255,.55) 0%,rgba(255,255,255,.05) 100%);
+    overflow:hidden;opacity:1!important;isolation:isolate}
+  /* 底部陰影層 */
+  .fab::after{content:'';position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.25) 0%,transparent 65%);
     pointer-events:none;z-index:1}
-  .fab span{position:relative;z-index:2}
-  .fab:active{transform:scale(.93);box-shadow:0 4px 16px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.4)}
-  /* 鍵盤彈出時隱藏 FAB */
+  /* 頂部高光 + 折射 */
+  .fab::before{content:'';position:absolute;top:6%;left:12%;width:54%;height:42%;border-radius:50%;
+    background:radial-gradient(ellipse at 40% 35%,rgba(255,255,255,.75) 0%,rgba(255,255,255,.2) 45%,transparent 70%);
+    pointer-events:none;z-index:3;transform:rotate(-15deg)}
+  .fab span{position:relative;z-index:4;
+    text-shadow:0 0 12px rgba(255,255,255,.9),0 0 24px rgba(255,255,255,.6),0 2px 4px rgba(0,0,0,.2)}
+  .fab:active{transform:scale(.92)}
   @media (max-height:500px){.fab{display:none}}
   /* Modal 底部加padding避免被導航列遮住 */
   .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 100px;width:100%;max-width:420px;animation:slideUp .25s;max-height:90vh;overflow-y:auto}
@@ -473,7 +476,13 @@
 
 </div>
 
-<button class="fab" id="fab" aria-label="新增"><span>＋</span></button>
+<button class="fab" id="fab" aria-label="新增">
+  <!-- 折射光層 -->
+  <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 70% 75%,rgba(255,255,255,.18) 0%,transparent 55%);pointer-events:none;z-index:2"></div>
+  <!-- 左側邊緣折射 -->
+  <div style="position:absolute;top:20%;left:5%;width:12%;height:55%;border-radius:50%;background:rgba(255,255,255,.15);pointer-events:none;z-index:2;filter:blur(2px)"></div>
+  <span>＋</span>
+</button>
 
 <div class="nav">
   <div class="nav-item active" id="nav-home" onclick="switchPage('home')"><div class="nav-icon">🏠</div><div class="nav-label">主頁</div></div>
@@ -1412,19 +1421,42 @@ function setHeader(){
   const g=h<6?'夜深了，注意休息！🌙':h<12?'早安！今天也要加油☀️':h<18?'下午好，記得記帳':'晚上好！今日帳記了嗎✨';
   document.getElementById('hdr-greeting').textContent=`你好，${cfg.username}！${g}`;
   document.title=cfg.title;
-  // 套用時段主題色到 FAB 光暈
+  // 套用時段主題到 FAB
   const fab=document.getElementById('fab');
   if(fab){
-    const glows={
-      night:'0 8px 32px rgba(63,81,181,.4),inset 0 1px 0 rgba(255,255,255,.6)',
-      morning:'0 8px 32px rgba(230,81,0,.35),inset 0 1px 0 rgba(255,255,255,.6)',
-      noon:'0 8px 32px rgba(21,101,192,.35),inset 0 1px 0 rgba(255,255,255,.6)',
-      evening:'0 8px 32px rgba(123,31,162,.4),inset 0 1px 0 rgba(255,255,255,.6)',
-      latenight:'0 8px 32px rgba(63,81,181,.4),inset 0 1px 0 rgba(255,255,255,.6)'
+    const themes={
+      night:{
+        bg:'rgba(63,81,181,.32)',
+        shadow:'0 12px 36px rgba(63,81,181,.5),0 4px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(63,81,181,.3)',
+        refract:'rgba(120,140,255,.2)'
+      },
+      morning:{
+        bg:'rgba(255,140,0,.28)',
+        shadow:'0 12px 36px rgba(230,81,0,.5),0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(230,81,0,.3)',
+        refract:'rgba(255,200,100,.2)'
+      },
+      noon:{
+        bg:'rgba(21,101,192,.28)',
+        shadow:'0 12px 36px rgba(21,101,192,.5),0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(21,101,192,.3)',
+        refract:'rgba(100,180,255,.2)'
+      },
+      evening:{
+        bg:'rgba(123,31,162,.32)',
+        shadow:'0 12px 36px rgba(123,31,162,.5),0 4px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(123,31,162,.3)',
+        refract:'rgba(200,130,255,.2)'
+      },
+      latenight:{
+        bg:'rgba(30,30,80,.35)',
+        shadow:'0 12px 36px rgba(30,30,100,.5),0 4px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 6px rgba(30,30,100,.3)',
+        refract:'rgba(100,100,200,.2)'
+      }
     };
-    const themeKey=h<6?'night':h<12?'morning':h<17?'noon':h<20?'evening':'latenight';
-    fab.style.boxShadow=glows[themeKey];
-    fab.style.background='rgba(255,255,255,.25)';
+    const key=h<6?'night':h<12?'morning':h<17?'noon':h<20?'evening':'latenight';
+    const t=themes[key];
+    fab.style.background=t.bg;
+    fab.style.boxShadow=t.shadow;
+    // 折射內光
+    fab.style.setProperty('--fab-refract', t.refract);
   }
 }
 
