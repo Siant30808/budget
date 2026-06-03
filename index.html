@@ -993,6 +993,38 @@ function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
 }
+
+// 時段主題色
+const TIME_THEMES={
+  night: { // 凌晨 0~5 深藍紫夜晚
+    header:'linear-gradient(135deg,#1A237E,#283593,#303F9F)',
+    fab:'linear-gradient(135deg,#3949AB,#1A237E)',
+    dot:'#9FA8DA'
+  },
+  morning: { // 早上 6~11 橙黃朝陽
+    header:'linear-gradient(135deg,#E65100,#F57C00,#FF8F00)',
+    fab:'linear-gradient(135deg,#FF8F00,#E65100)',
+    dot:'#FFE082'
+  },
+  afternoon: { // 下午 12~17 深綠
+    header:'linear-gradient(135deg,#1B5E20,#2E7D32,#388E3C)',
+    fab:'linear-gradient(135deg,#43A047,#1B5E20)',
+    dot:'#A5D6A7'
+  },
+  evening: { // 晚上 18~23 深紫靛藍
+    header:'linear-gradient(135deg,#4A148C,#6A1B9A,#7B1FA2)',
+    fab:'linear-gradient(135deg,#8E24AA,#4A148C)',
+    dot:'#CE93D8'
+  }
+};
+
+function getTheme(h){
+  if(h<6) return TIME_THEMES.night;
+  if(h<12) return TIME_THEMES.morning;
+  if(h<18) return TIME_THEMES.afternoon;
+  return TIME_THEMES.evening;
+}
+
 function setHeader(){
   const now=new Date(),days=['日','一','二','三','四','五','六'];
   document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
@@ -1000,6 +1032,13 @@ function setHeader(){
   const g=h<6?'夜深了，注意休息！🌙':h<12?'早安！今天也要加油☀️':h<18?'下午好，記得記帳📝':'晚上好！今日帳記了嗎✨';
   document.getElementById('hdr-greeting').textContent=`你好，${cfg.username}！${g}`;
   document.title=cfg.title;
+
+  // 套用時段主題色
+  const theme=getTheme(h);
+  document.querySelector('.header').style.background=theme.header;
+  document.querySelector('.period-dot').style.background=theme.dot;
+  const fab=document.getElementById('fab');
+  if(fab) fab.style.background=theme.fab;
 }
 
 // ── 初始化 ──
