@@ -6,8 +6,8 @@
   "scope": "/budget/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F0F4F0",
-  "theme_color": "#2E7D32",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "lang": "zh-TW",
   "dir": "ltr",
   "icons": [
