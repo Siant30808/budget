@@ -894,9 +894,7 @@ function drawPie(canvasId, legendId, list, colors){
 
   // ── 動畫參數 ──
   const ANIM_MS   = 900;   // 展開動畫時長
-  const GLOW_MS   = 2200;  // 閃光循環週期
   const startTime = performance.now();
-  let glowAngle   = 0;     // 閃光掃描角度（弧度）
 
   function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
 
@@ -904,10 +902,6 @@ function drawPie(canvasId, legendId, list, colors){
     const elapsed = now - startTime;
     const progress= Math.min(1, elapsed / ANIM_MS);
     const ep      = easeOutCubic(progress);  // 展開進度 0→1
-
-    // 閃光角度（動畫完成後繼續跑）
-    const glowT   = ((now % GLOW_MS) / GLOW_MS) * Math.PI * 2;
-    glowAngle     = glowT - Math.PI/2;
 
     ctx.clearRect(0,0,W,H);
 
@@ -922,11 +916,7 @@ function drawPie(canvasId, legendId, list, colors){
       ctx.arc(cx,cy,outerR,s,s+a);
       ctx.arc(cx,cy,innerR,s+a,s,true);
       ctx.closePath();
-      const grad=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
-      grad.addColorStop(0,color+'CC');
-      grad.addColorStop(0.5,color);
-      grad.addColorStop(1,color+'99');
-      ctx.fillStyle=grad; ctx.fill();
+      ctx.fillStyle=color; ctx.fill();
 
       // 分隔線
       ctx.beginPath();
@@ -938,25 +928,6 @@ function drawPie(canvasId, legendId, list, colors){
 
       s += fullA * ep;  // 下一段起點也隨進度移動
     });
-
-    // ── 5. 閃光掃描（展開完成後才出現）──
-    if(progress >= 1){
-      const glowWidth = 0.38;  // 閃光扇角寬度（弧度）
-      ctx.save();
-      ctx.globalCompositeOperation='screen';
-      const gx = cx + Math.cos(glowAngle) * (innerR + outerR) * 0.5;
-      const gy = cy + Math.sin(glowAngle) * (innerR + outerR) * 0.5;
-      const glowG = ctx.createRadialGradient(gx,gy,0,gx,gy,outerR*0.7);
-      glowG.addColorStop(0,'rgba(255,255,255,.72)');
-      glowG.addColorStop(0.4,'rgba(255,255,255,.28)');
-      glowG.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.arc(cx,cy,outerR, glowAngle-glowWidth, glowAngle+glowWidth);
-      ctx.closePath();
-      ctx.fillStyle=glowG; ctx.fill();
-      ctx.restore();
-    }
 
     // 內圈立體感
     const innerShadow=ctx.createRadialGradient(cx-5,cy-5,0,cx,cy,innerR);
@@ -983,8 +954,9 @@ function drawPie(canvasId, legendId, list, colors){
       : displayAmt.toLocaleString();
     ctx.fillText(label, cx, cy);
 
-    // 繼續跑（展開完成後只跑閃光）
-    _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
+    // 展開未完成繼續跑
+    if(progress < 1) _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
+    else _pieAnimMap[canvasId]=null;
   }
 
   _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
@@ -1040,8 +1012,8 @@ function refresh(){
   const p=currentPeriod();
   const txs=getPeriodTx(p);
   updateSummary();
-  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),['#EF5350','#FF8A80','#E53935','#FFCDD2','#C62828','#FF5252']);
-  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['#1976D2','#42A5F5','#0D47A1','#64B5F6','#1565C0','#90CAF9']);
+  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),['hsl(2,70%,60%)','hsl(10,70%,68%)','hsl(356,70%,52%)','hsl(18,70%,73%)','hsl(348,70%,46%)','hsl(6,70%,76%)']);
+  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['hsl(211,70%,45%)','hsl(207,70%,62%)','hsl(220,70%,33%)','hsl(205,70%,68%)','hsl(215,70%,40%)','hsl(207,70%,76%)']);
   renderTx();
 }
 
