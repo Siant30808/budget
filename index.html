@@ -159,9 +159,8 @@
   .import-btn{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--blue);font-size:15px;font-weight:700;cursor:pointer;color:var(--blue);background:none;margin-top:8px}
   .danger-btn{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--red);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--red);margin-top:8px}
   /* BG */
-  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .bg-layer{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
   .bg-layer img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:100vw;min-height:100vh;min-height:-webkit-fill-available;width:auto;height:auto;object-fit:cover;transition:opacity .4s}
-  /* App 內容層級要在背景之上 */
   .app{position:relative;z-index:1}
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
