@@ -115,9 +115,10 @@
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
   /* FAB */
-  .fab{position:fixed;bottom:80px;right:20px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20);box-shadow:0 6px 12px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15);border:none;color:#fff;font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;transition:transform .15s, box-shadow .15s;overflow:hidden}
-  .fab::before{content:'';position:absolute;top:8%;left:15%;width:55%;height:38%;border-radius:50%;background:radial-gradient(ellipse at 40% 30%,rgba(255,255,255,.75),rgba(255,255,255,.05));pointer-events:none}
-  .fab:active{transform:scale(.93);box-shadow:0 2px 6px rgba(0,0,0,.4),inset 0 1px 2px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15)}
+  .fab{position:fixed;bottom:80px;right:20px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#69F542,#2E7D32 60%,#1B5E20);box-shadow:0 6px 12px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.3),0 0 0 3px rgba(0,0,0,.15);border:none;color:#fff;font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9998;transition:transform .15s,box-shadow .15s;overflow:visible;opacity:1!important;isolation:isolate}
+  .fab::before{content:'';position:absolute;top:10%;left:18%;width:50%;height:35%;border-radius:50%;background:rgba(255,255,255,.5);pointer-events:none;z-index:1}
+  .fab span{position:relative;z-index:2}
+  .fab:active{transform:scale(.93)}
   /* 鍵盤彈出時隱藏 FAB */
   @media (max-height:500px){.fab{display:none}}
   /* Modal 底部加padding避免被導航列遮住 */
@@ -370,7 +371,7 @@
 
 </div>
 
-<button class="fab" id="fab" aria-label="新增">＋</button>
+<button class="fab" id="fab" aria-label="新增"><span>＋</span></button>
 
 <div class="nav">
   <div class="nav-item active" id="nav-home" onclick="switchPage('home')"><div class="nav-icon">🏠</div><div class="nav-label">主頁</div></div>
