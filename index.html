@@ -943,13 +943,13 @@ function drawPie(canvasId, legendId, list, colors){
     if(progress >= 1){
       const glowWidth = 0.38;  // 閃光扇角寬度（弧度）
       ctx.save();
-      ctx.globalCompositeOperation='multiply';
+      ctx.globalCompositeOperation='screen';
       const gx = cx + Math.cos(glowAngle) * (innerR + outerR) * 0.5;
       const gy = cy + Math.sin(glowAngle) * (innerR + outerR) * 0.5;
       const glowG = ctx.createRadialGradient(gx,gy,0,gx,gy,outerR*0.7);
-      glowG.addColorStop(0,'rgba(255,240,160,.82)');
-      glowG.addColorStop(0.4,'rgba(255,248,200,.38)');
-      glowG.addColorStop(1,'rgba(255,255,220,0)');
+      glowG.addColorStop(0,'rgba(255,255,255,.72)');
+      glowG.addColorStop(0.4,'rgba(255,255,255,.28)');
+      glowG.addColorStop(1,'rgba(255,255,255,0)');
       ctx.beginPath();
       ctx.moveTo(cx,cy);
       ctx.arc(cx,cy,outerR, glowAngle-glowWidth, glowAngle+glowWidth);
