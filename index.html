@@ -226,14 +226,9 @@
   <div class="page active" id="page-home">
     <div class="header">
       <div class="header-top">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="header-date" id="hdr-date" style="color:var(--text)"></div>
           <div class="header-greeting" id="hdr-greeting" style="color:var(--text)"></div>
-        </div>
-        <!-- 上月結餘卡片 -->
-        <div style="text-align:right;background:rgba(255,255,255,.7);border-radius:14px;padding:8px 12px;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.85);box-shadow:3px 3px 8px rgba(170,180,195,.4),-2px -2px 6px rgba(255,255,255,.8)">
-          <div style="font-size:10px;color:var(--muted)">📅 上期結餘</div>
-          <div style="font-size:15px;font-weight:700" id="hdr-last-bal">NT$0</div>
         </div>
       </div>
       <!-- 週期標籤 -->
@@ -262,19 +257,18 @@
         <div class="sum-card-inner">
           <div class="sum-icon">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="22" x2="5" y2="16"/>
-              <line x1="10" y1="22" x2="10" y2="12"/>
-              <line x1="15" y1="22" x2="15" y2="8"/>
-              <circle cx="5" cy="14" r="1.5" fill="#444" stroke="none"/>
-              <circle cx="10" cy="10" r="1.5" fill="#444" stroke="none"/>
-              <circle cx="15" cy="6" r="1.5" fill="#444" stroke="none"/>
-              <polyline points="13,6 20,4 23,7"/>
-              <line x1="20" y1="4" x2="20" y2="22"/>
+              <rect x="3" y="5" width="22" height="18" rx="2"/>
+              <line x1="8" y1="2" x2="8" y2="8"/>
+              <line x1="20" y1="2" x2="20" y2="8"/>
+              <line x1="3" y1="11" x2="25" y2="11"/>
+              <line x1="8" y1="16" x2="8" y2="16" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="14" y1="16" x2="14" y2="16" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="20" y1="16" x2="20" y2="16" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </div>
           <div>
-            <div class="sum-label">預估收入</div>
-            <div class="sum-val balance" id="s-bal">NT$0</div>
+            <div class="sum-label">上期結餘</div>
+            <div class="sum-val" id="hdr-last-bal">NT$0</div>
           </div>
         </div>
       </div>
@@ -301,14 +295,19 @@
         <div class="sum-card-inner">
           <div class="sum-icon">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="8" width="22" height="13" rx="2"/>
-              <circle cx="14" cy="14.5" r="4"/>
-              <text x="12" y="17" font-size="6" fill="#444" stroke="none" font-weight="bold">$</text>
+              <line x1="5" y1="22" x2="5" y2="16"/>
+              <line x1="10" y1="22" x2="10" y2="12"/>
+              <line x1="15" y1="22" x2="15" y2="8"/>
+              <circle cx="5" cy="14" r="1.5" fill="#444" stroke="none"/>
+              <circle cx="10" cy="10" r="1.5" fill="#444" stroke="none"/>
+              <circle cx="15" cy="6" r="1.5" fill="#444" stroke="none"/>
+              <polyline points="13,6 20,4 23,7"/>
+              <line x1="20" y1="4" x2="20" y2="22"/>
             </svg>
           </div>
           <div>
-            <div class="sum-label">現金手存</div>
-            <div class="sum-val" style="color:var(--green)" id="s-cash">NT$0</div>
+            <div class="sum-label">本期結餘</div>
+            <div class="sum-val balance" id="s-bal">NT$0</div>
           </div>
         </div>
       </div>
