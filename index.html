@@ -1337,7 +1337,7 @@ function renderReport(){
   // cfg.savings = 本期月初餘額，向前/後推算其他期
   const startBals = new Array(stats.length);
   startBals[cpIdx] = cfg.savings;
-  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i+1].net;
+  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i].net;
   for(let i = cpIdx+1; i < stats.length; i++) startBals[i] = startBals[i-1] + stats[i-1].net;
 
   // 由新到舊顯示
