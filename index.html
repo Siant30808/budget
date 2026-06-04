@@ -1144,6 +1144,7 @@ function loadSettingsForm(){
   document.getElementById('bgOpacityVal').textContent=op+'%';
   if(bgData){document.getElementById('bgPreview').src=bgData;document.getElementById('bgPreview').classList.add('show');}
   else document.getElementById('bgPreview').classList.remove('show');
+  });
 }
 function saveSettings(){
   cfg.username=document.getElementById('set-name').value.trim()||'我';
@@ -1758,7 +1759,7 @@ try{
     clearTimeout(window._bgT);
     window._bgT=setTimeout(()=>{
       layer.style.height=window.innerHeight+'px';
-    },500);
+    },500); });
   },{passive:true});
 })();
 
