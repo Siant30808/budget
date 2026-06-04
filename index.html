@@ -1344,6 +1344,59 @@ function renderReport(){
   scheduleShake();
 })();
 
+// ── 機器人 FAB ──
+const _rStages = [
+  { cls:'state-happy',   light:'#4caf50', dark:'#0a2e0e' },
+  { cls:'',              light:'#00e5ff', dark:'#001a33' },
+  { cls:'state-nervous', light:'#ffdd00', dark:'#332b00' },
+  { cls:'state-angry',   light:'#ff1144', dark:'#330008' },
+  { cls:'state-dizzy',   light:'#d400ff', dark:'#2a0033' },
+];
+let _rCur = 0;
+
+function updateFabRobot(pct){
+  const idx = pct<=20?0 : pct<=40?1 : pct<=60?2 : pct<=80?3 : 4;
+  if(idx === _rCur) return;
+  _rCur = idx;
+  const stage  = _rStages[idx];
+  const sphere = document.getElementById('robot-sphere');
+  const face   = document.getElementById('robot-face');
+  if(!sphere||!face) return;
+  sphere.style.setProperty('--color-light', stage.light);
+  sphere.style.setProperty('--color-dark',  stage.dark);
+  _rStages.forEach(s => s.cls && face.classList.remove(s.cls));
+  if(stage.cls) face.classList.add(stage.cls);
+}
+
+(function initRobot(){
+  const sphere = document.getElementById('robot-sphere');
+  const face   = document.getElementById('robot-face');
+  const look   = document.getElementById('robot-look');
+  if(!sphere||!face||!look) return;
+  sphere.style.setProperty('--color-light','#4caf50');
+  sphere.style.setProperty('--color-dark','#0a2e0e');
+  face.classList.add('state-happy');
+
+  function randomLook(){
+    var dirs=[[0,0],[0,-12],[0,15],[-18,0],[18,0],[-14,-10],[14,-10],[-14,12],[14,12]];
+    var nervous = _rCur===2||_rCur===4;
+    var dir = Math.random()>(nervous?0.3:0.6) ? dirs[Math.floor(Math.random()*dirs.length)] : [0,0];
+    var x=dir[0], y=dir[1];
+    look.style.transform = 'translateX('+x+'px) translateY('+y+'px) rotateX('+(-y)+'deg) rotateY('+x+'deg)';
+    setTimeout(randomLook, nervous?(500+Math.random()*1000):(1500+Math.random()*2500));
+  }
+  randomLook();
+
+  function randomBlink(){
+    if(_rCur===0||_rCur===1){
+      face.classList.add('auto-blink');
+      setTimeout(function(){ face.classList.remove('auto-blink'); }, 150);
+    }
+    setTimeout(randomBlink, _rCur===2?(1000+Math.random()*2000):(2500+Math.random()*4000));
+  }
+  randomBlink();
+})();
+
 // ── 匯出 Excel（按週期） ──
 function exportExcel(){
   if(!txData.length){showToast('❌ 尚無記錄');return}
