@@ -633,7 +633,7 @@ const CATS={
 const LS_DATA='acct_txdata_v1', LS_CFG='acct_settings_v1';
 
 let txData=JSON.parse(localStorage.getItem(LS_DATA)||'[]');
-let cfg=Object.assign({username:'智豪',payday:5,budget:15000,title:'記帳本',savings:0,lastPeriodStart:''},
+let cfg=Object.assign({username:'智豪',payday:5,budget:15000,title:'記帳本',savings:0,lastPeriodStart:'',periodBalances:{}},
   JSON.parse(localStorage.getItem(LS_CFG)||'{}'));
 // 確保所有必要欄位存在（相容舊版資料）
 cfg.payday=parseInt(cfg.payday)||5;
@@ -785,6 +785,9 @@ function checkPeriodRollover(){
       const prevInc=prevTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
       const prevCash=prevTxs.filter(t=>t.type==='expense'&&t.pay==='現金').reduce((s,t)=>s+t.amount,0);
       const finalSavings=cfg.savings+(prevInc-prevCash);
+      // 鎖定：把舊期的月初餘額永久存起來
+      if(!cfg.periodBalances) cfg.periodBalances={};
+      cfg.periodBalances[lastStart]=cfg.savings;
       cfg.savings=finalSavings;
       cfg.lastPeriodStart=p.startStr;
       cfg.lastPeriodEnd=p.endStr;
@@ -1334,11 +1337,21 @@ function renderReport(){
   let cpIdx = stats.findIndex(s => now >= s.p.start && now <= s.p.end);
   if(cpIdx < 0) cpIdx = stats.length - 1; // 找不到就用最後一期
 
-  // cfg.savings = 本期月初餘額，向前/後推算其他期
+  // 月初餘額：優先用換期時鎖定的值，沒有才從 cfg.savings 推算
+  const stored = cfg.periodBalances || {};
   const startBals = new Array(stats.length);
-  startBals[cpIdx] = cfg.savings;
-  for(let i = cpIdx-1; i >= 0; i--) startBals[i] = startBals[i+1] - stats[i].net;
-  for(let i = cpIdx+1; i < stats.length; i++) startBals[i] = startBals[i-1] + stats[i-1].net;
+  startBals[cpIdx] = cfg.savings; // 當期用 cfg.savings
+
+  // 往前推（已結算的期用鎖定值）
+  for(let i = cpIdx-1; i >= 0; i--){
+    const key = stats[i].p.startStr;
+    startBals[i] = (stored[key] !== undefined) ? stored[key] : startBals[i+1] - stats[i].net;
+  }
+  // 往後推（理論上不會有，保留相容）
+  for(let i = cpIdx+1; i < stats.length; i++){
+    const key = stats[i].p.startStr;
+    startBals[i] = (stored[key] !== undefined) ? stored[key] : startBals[i-1] + stats[i-1].net;
+  }
 
   // 由新到舊顯示
   tbody.innerHTML = stats.slice().reverse().map((s, idx) => {
