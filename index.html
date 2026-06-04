@@ -55,19 +55,7 @@
   .sum-val{font-size:18px;font-weight:700;white-space:nowrap}
   .sum-val.balance{color:var(--green)}.sum-val.expense{color:var(--red)}.sum-val.income{color:var(--blue)}
   /* Quick */
-  .section-title{font-size:16px;font-weight:700;padding:0 16px;margin-bottom:10px}
-  .quick{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-bottom:16px}
-  .quick-btn{background:rgba(255,255,255,.7);border-radius:20px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;cursor:pointer;
-    border:1px solid rgba(255,255,255,.85);
-    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
-    transition:all .15s;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-  .quick-btn:active{box-shadow:inset 4px 4px 8px rgba(170,180,195,.45),inset -4px -4px 8px rgba(255,255,255,.85);transform:scale(.98)}
-  .quick-btn .icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;
-    box-shadow:inset 3px 3px 6px rgba(170,180,195,.4),inset -3px -3px 6px rgba(255,255,255,.9);
-    background:rgba(255,255,255,.5)}
-  .quick-btn.exp{color:var(--red)}.quick-btn.inc{color:var(--blue)}
-  .quick-btn-icons{font-size:15px;margin-left:auto;opacity:.45}
-  /* Days left bar */
+  .section-title{font-size:16px;font-weight:700;padding:0 16px;margin-bottom:10px}  /* Days left bar */
   .period-bar-wrap{margin:0 16px 14px;background:rgba(255,255,255,.7);border-radius:20px;padding:14px 16px;
     box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
     border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -596,13 +584,11 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const CATS={
   expense:[{e:'🍜',n:'餐飲'},{e:'🚌',n:'交通'},{e:'🛍️',n:'購物'},{e:'🎮',n:'娛樂'},{e:'🏠',n:'住宿'},{e:'💊',n:'醫療'},{e:'📚',n:'教育'},{e:'📋',n:'其他'}],
   income:[{e:'💼',n:'薪資'},{e:'🎁',n:'獎金'},{e:'📈',n:'投資'},{e:'📋',n:'其他'}]
 };
-const PIE_COLORS=['#EF5350','#42A5F5','#AB47BC','#26A69A','#FFA726','#66BB6A','#EC407A','#78909C'];
 const LS_DATA='acct_txdata_v1', LS_CFG='acct_settings_v1';
 
 let txData=JSON.parse(localStorage.getItem(LS_DATA)||'[]');
