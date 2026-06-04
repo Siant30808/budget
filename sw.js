@@ -1,24 +1,22 @@
-const CACHE = 'budget-app-v1';
-const ASSETS = [
-  './',
-  './index.html',
+const CACHE = 'budget-app-v2';
+const STATIC_ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap'
+  './KkleBWA.gif',
+  './Pig_Coin_00000.png'
 ];
 
-// 安裝：快取所有資源
+// 安裝：快取靜態資源（不含 index.html）
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => {
-      return Promise.allSettled(ASSETS.map(url => cache.add(url).catch(()=>{})));
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE).then(cache =>
+      Promise.allSettled(STATIC_ASSETS.map(url => cache.add(url).catch(()=>{})))
+    ).then(() => self.skipWaiting())
   );
 });
 
-// 啟用：清除舊快取
+// 啟用：清除所有舊版快取
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -27,19 +25,41 @@ self.addEventListener('activate', e => {
   );
 });
 
-// 攔截請求：優先用快取，沒有才去網路
+// 攔截請求
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if(cached) return cached;
-      return fetch(e.request).then(resp => {
-        if(resp && resp.status === 200) {
+
+  const url = new URL(e.request.url);
+  const isHTML = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+
+  if(isHTML){
+    // index.html：網路優先，失敗才用快取（確保每次拿最新版）
+    e.respondWith(
+      fetch(e.request).then(resp => {
+        if(resp && resp.status === 200){
           const clone = resp.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return resp;
-      }).catch(() => cached || new Response('離線中', {status: 503}));
-    })
-  );
+      }).catch(() =>
+        caches.match(e.request).then(cached =>
+          cached || new Response('離線中，請先連線開啟一次 App', {status: 503})
+        )
+      )
+    );
+  } else {
+    // 其他資源：快取優先，背景更新
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        const fetchPromise = fetch(e.request).then(resp => {
+          if(resp && resp.status === 200){
+            const clone = resp.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
+          return resp;
+        }).catch(()=>{});
+        return cached || fetchPromise;
+      })
+    );
+  }
 });
