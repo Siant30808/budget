@@ -11,6 +11,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="記帳本">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <meta name="description" content="個人記帳工具，支援薪資週期統計與信用卡分析">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
@@ -133,7 +136,7 @@
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
   /* FAB */
-  .fab{position:fixed;bottom:80px;right:16px;width:64px;height:64px;border-radius:50%;
+  .fab{position:fixed;bottom:80px;right:max(16px,calc(50% - 194px));width:64px;height:64px;border-radius:50%;
     background:rgba(255,255,255,.25);
     border:1px solid rgba(255,255,255,.5);
     backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
@@ -156,7 +159,7 @@
   /* Modal 底部加padding避免被導航列遮住 */
   .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 100px;width:100%;max-width:420px;animation:slideUp .25s;max-height:90vh;overflow-y:auto}
   /* Nav */
-  .nav{display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;position:fixed;bottom:0;left:0;right:0;z-index:9999;background-color:rgba(255,255,255,.82)!important;border-top:1px solid rgba(255,255,255,.5)}
+  .nav{display:grid;grid-template-columns:repeat(4,1fr);padding:10px 0 16px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;z-index:9999;border-radius:20px 20px 0 0;background-color:rgba(255,255,255,.82)!important;border-top:1px solid rgba(255,255,255,.5)}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
   .nav-icon{font-size:22px}.nav-label{font-size:11px;color:var(--muted)}
   .nav-item.active .nav-label{color:var(--green);font-weight:700}
@@ -461,17 +464,17 @@
         <div class="settings-row">
           <div class="settings-row-icon">📅</div>
           <div class="settings-row-info"><div class="settings-row-label">發薪日</div><div class="settings-row-sub">週期從此日開始（1~28）</div></div>
-          <input type="number" id="set-payday" min="1" max="28" placeholder="5">
+          <input type="number" inputmode="decimal" id="set-payday" min="1" max="28" placeholder="5">
         </div>
         <div class="settings-row">
           <div class="settings-row-icon">🏦</div>
           <div class="settings-row-info"><div class="settings-row-label">當前存款</div><div class="settings-row-sub">NT$</div></div>
-          <input type="number" id="set-savings" min="0" placeholder="0">
+          <input type="number" inputmode="decimal" id="set-savings" min="0" placeholder="0">
         </div>
         <div class="settings-row">
           <div class="settings-row-icon">💰</div>
           <div class="settings-row-info"><div class="settings-row-label">每期預算</div><div class="settings-row-sub">NT$</div></div>
-          <input type="number" id="set-budget" min="0" placeholder="15000">
+          <input type="number" inputmode="decimal" id="set-budget" min="0" placeholder="15000">
         </div>
       </div>
 
@@ -571,7 +574,7 @@
       <button class="pay-btn" id="pay-card" onclick="setPay('信用卡')">💳 信用卡</button>
     </div>
     <div class="field-row">
-      <div class="field"><label>金額 (NT$)</label><input type="number" id="f-amount" placeholder="0" min="0"></div>
+      <div class="field"><label>金額 (NT$)</label><input type="number" inputmode="decimal" id="f-amount" placeholder="0" min="0"></div>
       <div class="field"><label>日期</label><input type="date" id="f-date"></div>
     </div>
     <div class="field"><label>類別</label><select id="f-cat"></select></div>
@@ -585,7 +588,7 @@
   <div class="modal">
     <div class="modal-title"><span>🏦 設定存款基準</span><button class="modal-close" onclick="closeSavingsEdit()">✕</button></div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:16px">輸入發薪當天的實際存款金額，系統會自動加上本期結餘計算目前存款</div>
-    <div class="field"><label>當前存款 (NT$)</label><input type="number" id="savings-input" placeholder="0" min="0" style="font-size:18px;font-weight:700"></div>
+    <div class="field"><label>當前存款 (NT$)</label><input type="number" inputmode="decimal" id="savings-input" placeholder="0" min="0" style="font-size:18px;font-weight:700"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
       <button onclick="closeSavingsEdit()" style="padding:13px;border-radius:14px;border:1.5px solid var(--border);background:none;font-size:15px;font-weight:600;cursor:pointer">取消</button>
       <button onclick="saveSavings()" style="padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#8E24AA,#6A1B9A);color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ 儲存</button>
@@ -863,7 +866,7 @@ function updateSummary(){
   // 剩餘天數
   const today=new Date(); today.setHours(0,0,0,0);
   const end=new Date(p.endStr); end.setHours(0,0,0,0);
-  const daysLeft=Math.max(0,Math.round((end-today)/86400000));
+  const daysLeft=Math.max(0,Math.round((end-today)/86400000)+1);
   const totalDays=Math.round((new Date(p.endStr)-new Date(p.startStr))/86400000)+1;
   const elapsed=totalDays-daysLeft;
   document.getElementById('days-left').textContent=`剩 ${daysLeft} 天`;
@@ -1135,7 +1138,7 @@ function loadSettingsForm(){
   document.getElementById('set-budget').value=cfg.budget;
   document.getElementById('set-savings').value=cfg.savings;
   document.getElementById('set-count').textContent=txData.length+' 筆';
-  const bgData=localStorage.getItem('acct_bg_v1');
+  _bgDB.get('img').then(bgData=>{
   const op=localStorage.getItem('acct_bg_opacity')||'100';
   document.getElementById('bgOpacity').value=op;
   document.getElementById('bgOpacityVal').textContent=op+'%';
@@ -1160,8 +1163,10 @@ function handleBgUpload(e){
   const f=e.target.files[0];if(!f)return;
   if(f.size>5*1024*1024){showToast('❌ 圖片請小於 5MB');return}
   const r=new FileReader();
-  r.onload=ev=>{
-    const d=ev.target.result;localStorage.setItem('acct_bg_v1',d);
+  r.onload=async ev=>{
+    const d=ev.target.result;
+    await _bgDB.set('img',d);
+    localStorage.setItem('acct_bg_opacity',document.getElementById('bgOpacity').value);
     applyBg(d,document.getElementById('bgOpacity').value);
     document.getElementById('bgPreview').src=d;document.getElementById('bgPreview').classList.add('show');
     showToast('🖼️ 背景已套用');
@@ -1374,6 +1379,14 @@ function exportExcel(){
 
 // ── 匯入 Excel 備份 ──
 function importExcel(e){
+  if(typeof XLSX==='undefined'){
+    showToast('⏳ 載入中…');
+    const _s=document.createElement('script');
+    _s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    _s.onload=()=>importExcel(e);
+    document.head.appendChild(_s);
+    return;
+  }
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=ev=>{
@@ -1728,8 +1741,12 @@ try{
     document.getElementById('hdr-period').textContent='本期 '+p.label;
   }catch(e2){}
 }
-const _bg=localStorage.getItem('acct_bg_v1');
-if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
+(async()=>{
+  const legacyBg=localStorage.getItem('acct_bg_v1');
+  if(legacyBg){ await _bgDB.set('img',legacyBg); localStorage.removeItem('acct_bg_v1'); }
+  const bg=await _bgDB.get('img');
+  if(bg) applyBg(bg,localStorage.getItem('acct_bg_opacity')||'100');
+})();
 
 // 鎖定背景層高度，避免網址列收起時背景縮放
 (function lockBgHeight(){
@@ -1737,7 +1754,7 @@ if(_bg) applyBg(_bg,localStorage.getItem('acct_bg_opacity')||'100');
   let initH=window.innerHeight;
   layer.style.height=initH+'px';
   window.addEventListener('resize',()=>{
-    if(!localStorage.getItem('acct_bg_v1'))return;
+    _bgDB.get('img').then(bg=>{ if(!bg)return;
     clearTimeout(window._bgT);
     window._bgT=setTimeout(()=>{
       layer.style.height=window.innerHeight+'px';
