@@ -252,10 +252,6 @@
     75% {transform:translate(-2px,1px) rotate(-1deg)}
     100%{transform:translate(0,0) rotate(0deg)}
   }
-
-  /* 儲存空間 */
-  #storage-bar.warn{background:linear-gradient(90deg,#FB8C00,#F4511E)}
-  #storage-bar.danger{background:linear-gradient(90deg,#E53935,#B71C1C)}
 </style>
 </head>
 <body>
@@ -488,46 +484,37 @@
           <div class="settings-row-icon">📦</div>
           <div class="settings-row-info"><div class="settings-row-label">記錄筆數</div><div class="settings-row-sub" id="set-count">0 筆</div></div>
         </div>
+        <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:12px 0">
+          <div style="display:flex;width:100%;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="settings-row-icon">💾</div>
+              <div class="settings-row-info">
+                <div class="settings-row-label">帳目儲存空間</div>
+                <div class="settings-row-sub" id="ls-usage-text">計算中...</div>
+              </div>
+            </div>
+            <span id="ls-status-badge" style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;transition:all .3s"></span>
+          </div>
+          <div class="period-bar" style="width:100%;height:6px;margin-top:6px">
+            <div class="period-bar-fill" id="ls-progress" style="width:0%;transition:width .4s ease,background .3s"></div>
+          </div>
+          <div id="ls-tip" style="font-size:11px;margin-top:6px;width:100%;line-height:1.4;transition:color .3s"></div>
+        </div>
+
+        <div class="settings-row" style="padding:12px 0">
+          <div class="settings-row-icon">🖼️</div>
+          <div class="settings-row-info">
+            <div class="settings-row-label">背景圖片快取</div>
+            <div class="settings-row-sub" id="idb-usage-text">圖片未上傳 (0 KB)</div>
+          </div>
+        </div>
+
         <div class="settings-row">
-          <div class="settings-row-icon">💾</div>
+          <div class="settings-row-icon">🔒</div>
           <div class="settings-row-info"><div class="settings-row-label">自動儲存</div><div class="settings-row-sub">每次記帳自動存入瀏覽器</div></div>
           <span style="font-size:12px;color:var(--green);font-weight:700">✅ 啟用</span>
         </div>
       </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">儲存空間</div>
-        <div id="storage-detail">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-            <span style="color:var(--muted)">已使用</span>
-            <span id="storage-used" style="font-weight:700;color:var(--text)">計算中…</span>
-          </div>
-          <div style="height:8px;border-radius:6px;background:var(--border);overflow:hidden;box-shadow:inset 2px 2px 4px rgba(170,180,195,.4)">
-            <div id="storage-bar" style="height:100%;border-radius:6px;width:0%;background:linear-gradient(90deg,#4CAF50,#26C6DA);transition:width .6s"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px">
-            <span id="storage-breakdown"></span>
-            <span id="storage-quota"></span>
-          </div>
-        </div>
-      </div>
-
-      <button class="export-btn" onclick="exportExcel()">📊 匯出 Excel 報表（依週期）</button>
-      <button class="import-btn" onclick="document.getElementById('importInput').click()">📂 匯入備份 Excel</button>
-      <input type="file" id="importInput" accept=".xlsx" style="display:none" onchange="importExcel(event)">
-      <button class="danger-btn" onclick="clearAllData()">🗑️ 清除全部記錄</button>
-    </div>
-  </div>
-
-  <!-- 報表頁 -->
-  <div class="page" id="page-report">
-    <div class="report-page">
-      <div class="report-header">
-        <div style="font-size:13px;color:var(--muted)">歷史紀錄</div>
-        <h2>📈 月結報表</h2>
-      </div>
-      <div class="report-table-wrap">
-        <div class="report-card">
           <table class="report-table">
             <thead>
               <tr>
@@ -1165,13 +1152,51 @@ function loadSettingsForm(){
   document.getElementById('set-budget').value=cfg.budget;
   document.getElementById('set-savings').value=cfg.savings;
   document.getElementById('set-count').textContent=txData.length+' 筆';
-  loadStorageInfo();
-  _bgDB.get('img').then(bgData=>{
-  const op=localStorage.getItem('acct_bg_opacity')||'100';
-  document.getElementById('bgOpacity').value=op;
-  document.getElementById('bgOpacityVal').textContent=op+'%';
-  if(bgData){document.getElementById('bgPreview').src=bgData;document.getElementById('bgPreview').classList.add('show');}
-  else document.getElementById('bgPreview').classList.remove('show');
+
+  // localStorage 用量
+  try{
+    var totalBytes=JSON.stringify(localStorage).length*2;
+    var limitBytes=5*1024*1024;
+    var usedKB=(totalBytes/1024).toFixed(1);
+    var pct=Math.min(100,(totalBytes/limitBytes)*100);
+    var singleTxBytes=150*2;
+    var remainingTxs=Math.floor(Math.max(0,limitBytes-totalBytes)/singleTxBytes);
+    document.getElementById('ls-usage-text').textContent='已用 '+usedKB+' KB / 上限 5.0 MB';
+    document.getElementById('ls-progress').style.width=pct+'%';
+    var badgeEl=document.getElementById('ls-status-badge');
+    var tipEl=document.getElementById('ls-tip');
+    if(pct>=80){
+      document.getElementById('ls-progress').style.background='var(--red)';
+      badgeEl.textContent='⚠️ 快用盡';
+      badgeEl.style.background='var(--red-bg)'; badgeEl.style.color='var(--red)';
+      tipEl.textContent='🚨 警告：剩餘空間吃緊！預估僅能再記約 '+remainingTxs.toLocaleString()+' 筆，請儘速匯出備份。';
+      tipEl.style.color='var(--red)';
+    } else {
+      document.getElementById('ls-progress').style.background='var(--green)';
+      badgeEl.textContent='🟢 充沛';
+      badgeEl.style.background='var(--green-bg)'; badgeEl.style.color='var(--green)';
+      tipEl.textContent='💡 狀態健康：預估還能記錄約 '+remainingTxs.toLocaleString()+' 筆明細。';
+      tipEl.style.color='var(--muted)';
+    }
+  }catch(e){
+    document.getElementById('ls-usage-text').textContent='無法讀取';
+  }
+
+  // IndexedDB 背景圖
+  _bgDB.get('img').then(function(bgData){
+    var op=localStorage.getItem('acct_bg_opacity')||'100';
+    document.getElementById('bgOpacity').value=op;
+    document.getElementById('bgOpacityVal').textContent=op+'%';
+    var idbEl=document.getElementById('idb-usage-text');
+    if(bgData){
+      document.getElementById('bgPreview').src=bgData;
+      document.getElementById('bgPreview').classList.add('show');
+      var bgMB=(bgData.length*2/(1024*1024)).toFixed(2);
+      if(idbEl) idbEl.textContent='已快取 1 張背景圖 ('+bgMB+' MB)';
+    } else {
+      document.getElementById('bgPreview').classList.remove('show');
+      if(idbEl) idbEl.textContent='尚未上傳背景圖 (0 KB)';
+    }
   });
 }
 function saveSettings(){
@@ -1432,41 +1457,6 @@ function updateFabRobot(pct){
 })();
 
 
-// ── 儲存空間統計 ──
-async function loadStorageInfo(){
-  try{
-    var lsSize=0;
-    for(var k in localStorage){
-      if(localStorage.hasOwnProperty(k)) lsSize+=((localStorage.getItem(k)||'').length+k.length)*2;
-    }
-    var LS_QUOTA=5*1024*1024;
-    var pct=Math.min(100,Math.round(lsSize/LS_QUOTA*100));
-    function fmtBytes(b){
-      if(b<1024) return b+' B';
-      if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
-      return (b/1024/1024).toFixed(2)+' MB';
-    }
-    var usedEl=document.getElementById('storage-used');
-    var barEl=document.getElementById('storage-bar');
-    var quotaEl=document.getElementById('storage-quota');
-    var bdEl=document.getElementById('storage-breakdown');
-    if(!usedEl) return;
-    usedEl.textContent=fmtBytes(lsSize)+' ('+pct+'%)';
-    if(barEl){
-      barEl.style.width=pct+'%';
-      barEl.className=pct>80?'danger':pct>60?'warn':'';
-    }
-    if(quotaEl) quotaEl.textContent='上限 '+fmtBytes(LS_QUOTA);
-    if(bdEl){
-      var txSize=((localStorage.getItem('acct_txdata_v1')||'').length)*2;
-      var cfgSize=((localStorage.getItem('acct_settings_v1')||'').length)*2;
-      var parts=[];
-      if(txSize) parts.push('記帳 '+fmtBytes(txSize));
-      if(cfgSize) parts.push('設定 '+fmtBytes(cfgSize));
-      bdEl.textContent=parts.join(' / ');
-    }
-  }catch(e){}
-}
 
 
 // ── 匯出 Excel（按週期） ──
