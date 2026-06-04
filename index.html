@@ -624,7 +624,16 @@ save();
 
 let curType='expense', curPay='現金';
 
-function save(){ localStorage.setItem(LS_DATA,JSON.stringify(txData)); localStorage.setItem(LS_CFG,JSON.stringify(cfg)); }
+function save(){
+  try{
+    localStorage.setItem(LS_DATA,JSON.stringify(txData));
+    localStorage.setItem(LS_CFG,JSON.stringify(cfg));
+  }catch(e){
+    if(e.name==='QuotaExceededError'||e.code===22||e.code===1014){
+      showToast('⚠️ 儲存空間不足，請先匯出備份或清除舊資料');
+    }
+  }
+}
 
 // ── 可拖曳浮動球 ──
 (function initDraggableFab(){
@@ -1426,57 +1435,39 @@ function updateFabRobot(pct){
 // ── 儲存空間統計 ──
 async function loadStorageInfo(){
   try{
-    // localStorage 大小
-    var lsSize = 0;
-    for(var k in localStorage){ if(localStorage.hasOwnProperty(k)) lsSize += (localStorage[k]||'').length * 2; }
-
-    // IndexedDB 背景圖大小
-    var bgSize = 0;
-    try{
-      var bg = await _bgDB.get('img');
-      if(bg) bgSize = bg.length * 2;
-    }catch(e){}
-
-    var totalUsed = lsSize + bgSize;
-
-    // navigator.storage.estimate() 取得瀏覽器配額
-    var quota = 0, browserUsed = 0;
-    if(navigator.storage && navigator.storage.estimate){
-      var est = await navigator.storage.estimate();
-      quota = est.quota || 0;
-      browserUsed = est.usage || 0;
+    var lsSize=0;
+    for(var k in localStorage){
+      if(localStorage.hasOwnProperty(k)) lsSize+=((localStorage.getItem(k)||'').length+k.length)*2;
     }
-
-    // 顯示用量（優先用 estimate，沒有就用手算）
-    var used = browserUsed || totalUsed;
-    var pct  = quota ? Math.min(100, Math.round(used / quota * 100)) : 0;
-
+    var LS_QUOTA=5*1024*1024;
+    var pct=Math.min(100,Math.round(lsSize/LS_QUOTA*100));
     function fmtBytes(b){
-      if(b < 1024) return b + ' B';
-      if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-      return (b/1024/1024).toFixed(2) + ' MB';
+      if(b<1024) return b+' B';
+      if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+      return (b/1024/1024).toFixed(2)+' MB';
     }
-
-    var usedEl = document.getElementById('storage-used');
-    var barEl  = document.getElementById('storage-bar');
-    var quotaEl= document.getElementById('storage-quota');
-    var bdEl   = document.getElementById('storage-breakdown');
+    var usedEl=document.getElementById('storage-used');
+    var barEl=document.getElementById('storage-bar');
+    var quotaEl=document.getElementById('storage-quota');
+    var bdEl=document.getElementById('storage-breakdown');
     if(!usedEl) return;
-
-    usedEl.textContent = fmtBytes(used) + (quota ? ' (' + pct + '%)' : '');
+    usedEl.textContent=fmtBytes(lsSize)+' ('+pct+'%)';
     if(barEl){
-      barEl.style.width = (quota ? pct : 0) + '%';
-      barEl.className = pct > 80 ? 'danger' : pct > 60 ? 'warn' : '';
+      barEl.style.width=pct+'%';
+      barEl.className=pct>80?'danger':pct>60?'warn':'';
     }
-    if(quotaEl) quotaEl.textContent = quota ? '上限 ' + fmtBytes(quota) : '';
+    if(quotaEl) quotaEl.textContent='上限 '+fmtBytes(LS_QUOTA);
     if(bdEl){
-      var parts = [];
-      if(lsSize)  parts.push('記帳 ' + fmtBytes(lsSize));
-      if(bgSize)  parts.push('背景圖 ' + fmtBytes(bgSize));
-      bdEl.textContent = parts.join(' ／ ');
+      var txSize=((localStorage.getItem('acct_txdata_v1')||'').length)*2;
+      var cfgSize=((localStorage.getItem('acct_settings_v1')||'').length)*2;
+      var parts=[];
+      if(txSize) parts.push('記帳 '+fmtBytes(txSize));
+      if(cfgSize) parts.push('設定 '+fmtBytes(cfgSize));
+      bdEl.textContent=parts.join(' / ');
     }
   }catch(e){}
 }
+
 
 // ── 匯出 Excel（按週期） ──
 function exportExcel(){
