@@ -33,8 +33,6 @@
   .app{max-width:420px;margin:0 auto;min-height:100vh;background:transparent;display:flex;flex-direction:column}
   .app-with-bg{background:transparent!important}
   body:has(.app-with-bg){background:transparent!important}
-  /* FAB 永遠保持不透明 */
-  .fab{opacity:1!important;background-color:transparent}
   .header{background:transparent;padding:20px 20px 28px;color:var(--text)}
   .header-top{display:flex;justify-content:space-between;align-items:flex-start}
   .header-date{font-size:13px;margin-bottom:4px}
@@ -135,27 +133,39 @@
   .submit-btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;color:#fff;margin-top:6px}
   .submit-btn.exp{background:linear-gradient(135deg,var(--red-light),var(--red))}
   .submit-btn.inc{background:linear-gradient(135deg,#43A047,var(--green))}
-  /* FAB */
-  .fab{position:fixed;bottom:80px;right:max(16px,calc(50% - 194px));width:64px;height:64px;border-radius:50%;
-    background:rgba(255,255,255,.25);
-    border:1px solid rgba(255,255,255,.5);
-    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    color:#fff;font-size:28px;font-weight:200;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-    z-index:9998;transition:transform .15s,box-shadow .15s;
-    overflow:hidden;opacity:1!important;isolation:isolate}
-  /* 底部陰影層 */
-  .fab::after{content:'';position:absolute;inset:0;border-radius:50%;
-    background:radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.25) 0%,transparent 65%);
-    pointer-events:none;z-index:1}
-  /* 頂部高光 + 折射 */
-  .fab::before{content:'';position:absolute;top:6%;left:12%;width:54%;height:42%;border-radius:50%;
-    background:radial-gradient(ellipse at 40% 35%,rgba(255,255,255,.75) 0%,rgba(255,255,255,.2) 45%,transparent 70%);
-    pointer-events:none;z-index:3;transform:rotate(-15deg)}
-  .fab span{position:relative;z-index:4;
-    text-shadow:0 0 12px rgba(255,255,255,.9),0 0 24px rgba(255,255,255,.6),0 2px 4px rgba(0,0,0,.2)}
+  /* FAB Robot */
+  .fab{position:fixed;bottom:80px;right:max(16px,calc(50% - 194px));
+    width:64px;height:64px;border-radius:50%;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    z-index:9998;transition:transform .15s;overflow:visible;opacity:1!important;display:block}
   .fab:active{transform:scale(.92)}
   @media (max-height:500px){.fab{display:none}}
+  .plasma-sphere{position:relative;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--color-dark,#0a2e0e),#02060d);box-shadow:0 10px 25px rgba(0,0,0,.8);transition:background .4s ease;perspective:300px;overflow:hidden;transform:scale(0.3555);transform-origin:top left;pointer-events:none;}
+  .plasma-sphere::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset -12px -12px 30px rgba(0,0,0,.95),inset 4px 4px 15px rgba(255,255,255,.35),inset 0 0 8px rgba(255,255,255,.6);pointer-events:none;z-index:15;}
+  .r-glass{position:absolute;top:3%;left:12%;width:76%;height:45%;border-radius:50%/60% 60% 40% 40%;background:linear-gradient(to bottom,rgba(255,255,255,.6),rgba(255,255,255,0));pointer-events:none;z-index:10;}
+  .r-look{position:absolute;inset:0;transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:5;}
+  .r-face{position:relative;width:100%;height:100%;color:var(--color-light,#4caf50);filter:drop-shadow(0 0 5px currentColor) drop-shadow(0 0 15px currentColor) brightness(1.3);}
+  .r-eyes::before,.r-eyes::after{content:'';position:absolute;top:50px;width:36px;height:30px;background-color:currentColor;border-radius:40px 40px 12px 12px;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+  .r-eyes::before{left:32px;}.r-eyes::after{right:32px;}
+  .r-mouth::before{content:'';position:absolute;bottom:40px;left:82px;width:16px;height:8px;background-color:currentColor;border-radius:10px;opacity:.4;transition:all .3s ease;}
+  .r-led{position:absolute;inset:-20px;background-image:radial-gradient(circle at 35% 35%,rgba(255,255,255,.8) 0%,rgba(255,255,255,0) 25%),radial-gradient(circle at 65% 65%,rgba(0,0,0,.9) 0%,rgba(0,0,0,0) 35%),radial-gradient(circle at 50% 50%,transparent 35%,rgba(0,0,0,.7) 42%,rgba(0,0,0,.95) 48%),radial-gradient(circle at 50% 50%,transparent 45%,#050505 50%);background-size:6px 6px;z-index:8;pointer-events:none;}
+  .auto-blink .r-eyes::before,.auto-blink .r-eyes::after{height:6px!important;top:74px!important;border-radius:10px!important;}
+  .state-happy .r-eyes::before,.state-happy .r-eyes::after{height:20px;width:34px;background-color:transparent;border-top:10px solid currentColor;border-radius:50px 50px 0 0;top:55px;}
+  .state-happy .r-mouth::before{width:20px;height:10px;background:transparent;opacity:1;border-bottom:6px solid currentColor;border-radius:50%;bottom:38px;left:80px;}
+  .state-nervous .r-eyes::before,.state-nervous .r-eyes::after{height:26px;border-radius:40px 40px 20px 20px;top:55px;}
+  .state-nervous .r-eyes::before{transform:rotate(-15deg);left:28px;}.state-nervous .r-eyes::after{transform:rotate(15deg);right:28px;}
+  .state-nervous .r-mouth::before{width:10px;height:10px;left:85px;bottom:35px;border-radius:50%;opacity:.8;}
+  @keyframes shiver{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,2px)}}
+  .state-nervous .r-face{animation:shiver .15s infinite;}
+  .state-angry .r-eyes::before,.state-angry .r-eyes::after{height:24px;top:60px;border-radius:10px 10px 30px 30px;}
+  .state-angry .r-eyes::before{transform:rotate(25deg);left:35px;}.state-angry .r-eyes::after{transform:rotate(-25deg);right:35px;}
+  .state-angry .r-mouth::before{width:24px;left:78px;height:4px;opacity:.9;bottom:45px;}
+  .state-dizzy .r-eyes::before,.state-dizzy .r-eyes::after{background-color:transparent;width:26px;height:26px;border-radius:4px;top:55px;}
+  .state-dizzy .r-eyes::before{border-top:8px solid currentColor;border-right:8px solid currentColor;transform:rotate(65deg);left:30px;}
+  .state-dizzy .r-eyes::after{border-top:8px solid currentColor;border-left:8px solid currentColor;transform:rotate(-65deg);right:30px;}
+  .state-dizzy .r-mouth::before{opacity:0;}
+  @keyframes dizzySway{0%,100%{transform:rotate(0) translate(0,0)}25%{transform:rotate(8deg) translate(3px,-2px)}75%{transform:rotate(-8deg) translate(-3px,2px)}}
+  .state-dizzy .r-face{animation:dizzySway 3s ease-in-out infinite;}
   /* Modal 底部加padding避免被導航列遮住 */
   .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 100px;width:100%;max-width:420px;animation:slideUp .25s;max-height:90vh;overflow-y:auto}
   /* Nav */
@@ -202,7 +212,6 @@
   .app-with-bg{background:transparent!important}
   .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
-  /* FAB 顏色由 JS 時段主題控制 */
   .app-with-bg .nav,.app-with-bg .settings-section{background:rgba(255,255,255,.88);backdrop-filter:blur(12px)}
   .app-with-bg .header{background:transparent!important}
   .app-with-bg .cc-header{background:transparent}
@@ -547,11 +556,16 @@
 </div>
 
 <button class="fab" id="fab" aria-label="新增">
-  <!-- 折射光層 -->
-  <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 70% 75%,rgba(255,255,255,.18) 0%,transparent 55%);pointer-events:none;z-index:2"></div>
-  <!-- 左側邊緣折射 -->
-  <div style="position:absolute;top:20%;left:5%;width:12%;height:55%;border-radius:50%;background:rgba(255,255,255,.15);pointer-events:none;z-index:2;filter:blur(2px)"></div>
-  <span>＋</span>
+  <div class="plasma-sphere" id="robot-sphere">
+    <div class="r-look" id="robot-look">
+      <div class="r-face" id="robot-face">
+        <div class="r-eyes"></div>
+        <div class="r-mouth"></div>
+      </div>
+    </div>
+    <div class="r-led"></div>
+    <div class="r-glass"></div>
+  </div>
 </button>
 
 <div class="nav">
@@ -859,6 +873,7 @@ function updateSummary(){
   // 預算進度（以現金支出為基準）
   const pct=Math.min(100,Math.round(cash/cfg.budget*100));
   document.getElementById('period-fill').style.width=pct+'%';
+  updateFabRobot(pct);
   document.getElementById('period-fill').style.background=pct>80?'#E53935':pct>60?'#FB8C00':'#4CAF50';
   document.getElementById('budget-used-lbl').textContent='已用 '+fmt(cash);
   document.getElementById('budget-total-lbl').textContent='預算 '+fmt(cfg.budget);
