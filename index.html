@@ -877,109 +877,139 @@ function updateSummary(){
 // ── 圓餅圖 ──
 // 取消舊動畫用
 const _pieAnimMap={};
-
+
 function drawPie(canvasId, legendId, list, colors){
   const catMap={};
   list.forEach(t=>catMap[t.cat]=(catMap[t.cat]||0)+t.amount);
   const cats=Object.keys(catMap), vals=cats.map(c=>catMap[c]);
   const total=vals.reduce((s,v)=>s+v,0);
   const cv=document.getElementById(canvasId), ctx=cv.getContext('2d');
-  const W=cv.width, H=cv.height, cx=W/2, cy=H/2;
-  const outerR=W*0.42, innerR=W*0.22;
 
-  // 圖例先渲染（不受動畫影響）
+  // 高畫質 Canvas
+  const dpr=window.devicePixelRatio||1;
+  const W=130, H=130;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  cv.width=W*dpr; cv.height=H*dpr;
+  ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
+  const cx=W/2, cy=H/2;
+  const outerR=W*0.42, innerR=W*0.25;
+
+  // 圖例
   const legendEl=document.getElementById(legendId);
   const items=cats.slice(0,4);
-  legendEl.innerHTML=total?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">
-    ${items.map((c,i)=>`
-      <div style="display:flex;align-items:center;gap:4px;font-size:10px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0;display:inline-block"></span>
-        <span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c}</span>
-        <span style="font-weight:700;color:var(--text)">(${Math.round(vals[i]/total*100)}%)</span>
-      </div>`).join('')}
-  </div>`:'';
+  if(total){
+    legendEl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">'
+      +items.map((c,i)=>'<div style="display:flex;align-items:center;gap:4px;font-size:11px">'
+        +'<span style="width:10px;height:10px;border-radius:50%;background:'+colors[i%colors.length]+';flex-shrink:0;display:inline-block"></span>'
+        +'<span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c+'</span>'
+        +'<span style="font-weight:700;color:var(--text)">('+Math.round(vals[i]/total*100)+'%)</span>'
+        +'</div>').join('')
+      +'</div>';
+  } else { legendEl.innerHTML=''; }
 
-  // 停止舊動畫
   if(_pieAnimMap[canvasId]) cancelAnimationFrame(_pieAnimMap[canvasId]);
 
   if(!total){
     ctx.clearRect(0,0,W,H);
-    ctx.beginPath();ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2);
     ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
-    const emptyG=ctx.createRadialGradient(cx,cy,innerR,cx,cy,outerR);
-    emptyG.addColorStop(0,'#E0E4EA');emptyG.addColorStop(1,'#CDD2DA');
-    ctx.fillStyle=emptyG;ctx.fill();
+    ctx.fillStyle='#E8ECF1'; ctx.fill();
     return;
   }
 
-  // ── 動畫參數 ──
-  const ANIM_MS   = 900;   // 展開動畫時長
-  const startTime = performance.now();
+  var activeIndex=-1;
+  var ANIM_MS=1200;
+  var startTime=performance.now();
 
-  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
-
-  function renderFrame(now){
-    const elapsed = now - startTime;
-    const progress= Math.min(1, elapsed / ANIM_MS);
-    const ep      = easeOutCubic(progress);  // 展開進度 0→1
-
-    ctx.clearRect(0,0,W,H);
-
-    // ── 1. 展開扇形 ──
-    let s = -Math.PI/2;
-    vals.forEach((v,i)=>{
-      const fullA = (v/total)*Math.PI*2;
-      const a     = fullA * ep;            // 依進度縮放弧度
-      const color = colors[i%colors.length];
-
-      ctx.beginPath();
-      ctx.arc(cx,cy,outerR,s,s+a);
-      ctx.arc(cx,cy,innerR,s+a,s,true);
-      ctx.closePath();
-      ctx.fillStyle=color; ctx.fill();
-
-      // 分隔線
-      ctx.beginPath();
-      ctx.arc(cx,cy,outerR,s,s+a);
-      ctx.arc(cx,cy,innerR,s+a,s,true);
-      ctx.closePath();
-      ctx.strokeStyle='rgba(255,255,255,.8)';
-      ctx.lineWidth=1.5; ctx.stroke();
-
-      s += fullA * ep;  // 下一段起點也隨進度移動
-    });
-
-    // 內圈立體感
-    const innerShadow=ctx.createRadialGradient(cx-5,cy-5,0,cx,cy,innerR);
-    innerShadow.addColorStop(0,'rgba(255,255,255,0)');
-    innerShadow.addColorStop(0.7,'rgba(0,0,0,.04)');
-    innerShadow.addColorStop(1,'rgba(0,0,0,.12)');
-    ctx.beginPath();ctx.arc(cx,cy,innerR,0,Math.PI*2);
-    ctx.fillStyle=innerShadow;ctx.fill();
-
-    // 中心白圓
-    const centerG=ctx.createRadialGradient(cx-3,cy-3,0,cx,cy,innerR);
-    centerG.addColorStop(0,'rgba(255,255,255,.95)');
-    centerG.addColorStop(1,'rgba(230,235,242,.9)');
-    ctx.beginPath();ctx.arc(cx,cy,innerR-2,0,Math.PI*2);
-    ctx.fillStyle=centerG;ctx.fill();
-
-    // ── 3. 中心數字滾動 ──
-    const displayAmt = Math.round(total * ep);
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='#1A1A1A';
-    ctx.font=`bold ${W*0.13}px "Noto Sans TC",sans-serif`;
-    const label = displayAmt>=10000
-      ? (displayAmt/10000).toFixed(1)+'萬'
-      : displayAmt.toLocaleString();
-    ctx.fillText(label, cx, cy);
-
-    // 展開未完成繼續跑
-    if(progress < 1) _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
-    else _pieAnimMap[canvasId]=null;
+  function _elasticOut(t){
+    var c4=(2*Math.PI)/3;
+    return t===0?0:t===1?1:Math.pow(2,-10*t)*Math.sin((t*10-0.75)*c4)+1;
   }
 
-  _pieAnimMap[canvasId]=requestAnimationFrame(renderFrame);
+  function renderPieFrame(now){
+    var elapsed=now-startTime;
+    var progress=Math.min(1,elapsed/ANIM_MS);
+    var ep=_elasticOut(progress);
+    ctx.clearRect(0,0,W,H);
+
+    // 1. 甜甜圈切片
+    var s=-Math.PI/2;
+    vals.forEach(function(v,i){
+      var fullA=(v/total)*Math.PI*2;
+      var a=fullA*ep;
+      var color=colors[i%colors.length];
+      var scx=cx, scy=cy;
+      if(i===activeIndex){ var mid=s+a/2; scx+=Math.cos(mid)*6; scy+=Math.sin(mid)*6; }
+      ctx.beginPath();
+      ctx.arc(scx,scy,outerR,s,s+a);
+      ctx.arc(scx,scy,innerR-2,s+a,s,true);
+      ctx.closePath();
+      ctx.fillStyle=color; ctx.fill();
+      ctx.strokeStyle='#FFF'; ctx.lineWidth=2.5; ctx.stroke();
+      s+=fullA*ep;
+    });
+
+    // 2. 雷達掃描
+    if(progress>0.5){
+      try{
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx,cy,outerR,0,Math.PI*2);
+        ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
+        ctx.clip();
+        if(typeof ctx.createConicGradient==='function'){
+          var scanAngle=-(now/800)%(Math.PI*2);
+          var sweepGrd=ctx.createConicGradient(scanAngle,cx,cy);
+          sweepGrd.addColorStop(0,'rgba(255,255,255,0.65)');
+          sweepGrd.addColorStop(0.15,'rgba(255,255,255,0)');
+          sweepGrd.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.fillStyle=sweepGrd;
+          ctx.fillRect(0,0,W,H);
+        }
+        ctx.restore();
+      }catch(ex){}
+    }
+
+    // 3. 中心懸浮白圓
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,innerR,0,Math.PI*2);
+    ctx.shadowColor='rgba(0,0,0,0.15)';
+    ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+    ctx.fillStyle='#FFF'; ctx.fill();
+    ctx.restore();
+
+    // 4. 中心文字
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#1A1A1A';
+    ctx.font='bold '+(W*0.14)+'px "Noto Sans TC",sans-serif';
+    var dispV=activeIndex!==-1?vals[activeIndex]:Math.round(total*ep);
+    ctx.fillText(dispV>=10000?(dispV/10000).toFixed(1)+'萬':dispV.toLocaleString(),cx,cy);
+
+    _pieAnimMap[canvasId]=requestAnimationFrame(renderPieFrame);
+  }
+
+  // 觸控偵測
+  cv.onpointerdown=function(e){
+    if(!total) return;
+    var rect=cv.getBoundingClientRect();
+    var dx=(e.clientX-rect.left)-(rect.width/2);
+    var dy=(e.clientY-rect.top)-(rect.height/2);
+    var scale=W/rect.width;
+    var dist=Math.sqrt(dx*dx+dy*dy)*scale;
+    if(dist>=innerR&&dist<=outerR){
+      var angle=Math.atan2(dy,dx)+Math.PI/2;
+      if(angle<0) angle+=Math.PI*2;
+      var cur=0, clicked=-1;
+      for(var i=0;i<vals.length;i++){
+        var sa=(vals[i]/total)*Math.PI*2;
+        if(angle>=cur&&angle<cur+sa){clicked=i;break;}
+        cur+=sa;
+      }
+      activeIndex=(activeIndex===clicked)?-1:clicked;
+    } else { activeIndex=-1; }
+  };
+
+  _pieAnimMap[canvasId]=requestAnimationFrame(renderPieFrame);
 }
 
 // ── 交易列表 ──
