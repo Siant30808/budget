@@ -397,20 +397,6 @@
       </div>
     </div>
 
-    <div class="section-title">快捷操作</div>
-    <div class="quick">
-      <button class="quick-btn exp" onclick="openModal('expense')">
-        <span class="icon">➕</span>
-        <span>新增支出</span>
-        <span class="quick-btn-icons">☕ 🛒</span>
-      </button>
-      <button class="quick-btn inc" onclick="openModal('income')">
-        <span class="icon">➕</span>
-        <span>新增收入</span>
-        <span class="quick-btn-icons">💰 🤝</span>
-      </button>
-    </div>
-
     <div class="side-panel">
       <div class="panel-card">
         <div class="panel-title">支出分類</div>
@@ -1833,10 +1819,7 @@ try{
 
 // ── PWA Service Worker 註冊 ──
 if('serviceWorker' in navigator){
-  // 先清除所有舊的 SW 快取，確保載入最新版本
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(reg=>reg.unregister());
-  });
+  navigator.serviceWorker.register('/budget/sw.js').catch(()=>{});
 }
 </script>
 </body>
