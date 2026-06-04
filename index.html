@@ -1161,6 +1161,25 @@ function clearAllData(){
 }
 
 // ── 背景圖 ──
+// ── 背景圖 IndexedDB helper ──
+const _bgDB=(()=>{
+  let db;
+  function open(){
+    return new Promise((res,rej)=>{
+      if(db){res(db);return;}
+      const req=indexedDB.open('acct_bg',1);
+      req.onupgradeneeded=e=>{e.target.result.createObjectStore('bg');};
+      req.onsuccess=e=>{db=e.target.result;res(db);};
+      req.onerror=rej;
+    });
+  }
+  return {
+    get:async(k)=>{const d=await open();return new Promise((r,j)=>{const t=d.transaction('bg').objectStore('bg').get(k);t.onsuccess=e=>r(e.target.result);t.onerror=j;});},
+    set:async(k,v)=>{const d=await open();return new Promise((r,j)=>{const t=d.transaction('bg','readwrite').objectStore('bg').put(v,k);t.onsuccess=r;t.onerror=j;});},
+    del:async(k)=>{const d=await open();return new Promise((r,j)=>{const t=d.transaction('bg','readwrite').objectStore('bg').delete(k);t.onsuccess=r;t.onerror=j;});}
+  };
+})();
+
 function handleBgUpload(e){
   const f=e.target.files[0];if(!f)return;
   if(f.size>10*1024*1024){showToast('❌ 圖片請小於 10MB');return}
