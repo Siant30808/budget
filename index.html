@@ -252,6 +252,10 @@
     75% {transform:translate(-2px,1px) rotate(-1deg)}
     100%{transform:translate(0,0) rotate(0deg)}
   }
+
+  /* 儲存空間 */
+  #storage-bar.warn{background:linear-gradient(90deg,#FB8C00,#F4511E)}
+  #storage-bar.danger{background:linear-gradient(90deg,#E53935,#B71C1C)}
 </style>
 </head>
 <body>
@@ -488,6 +492,23 @@
           <div class="settings-row-icon">💾</div>
           <div class="settings-row-info"><div class="settings-row-label">自動儲存</div><div class="settings-row-sub">每次記帳自動存入瀏覽器</div></div>
           <span style="font-size:12px;color:var(--green);font-weight:700">✅ 啟用</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">儲存空間</div>
+        <div id="storage-detail">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+            <span style="color:var(--muted)">已使用</span>
+            <span id="storage-used" style="font-weight:700;color:var(--text)">計算中…</span>
+          </div>
+          <div style="height:8px;border-radius:6px;background:var(--border);overflow:hidden;box-shadow:inset 2px 2px 4px rgba(170,180,195,.4)">
+            <div id="storage-bar" style="height:100%;border-radius:6px;width:0%;background:linear-gradient(90deg,#4CAF50,#26C6DA);transition:width .6s"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px">
+            <span id="storage-breakdown"></span>
+            <span id="storage-quota"></span>
+          </div>
         </div>
       </div>
 
@@ -1135,6 +1156,7 @@ function loadSettingsForm(){
   document.getElementById('set-budget').value=cfg.budget;
   document.getElementById('set-savings').value=cfg.savings;
   document.getElementById('set-count').textContent=txData.length+' 筆';
+  loadStorageInfo();
   _bgDB.get('img').then(bgData=>{
   const op=localStorage.getItem('acct_bg_opacity')||'100';
   document.getElementById('bgOpacity').value=op;
@@ -1399,6 +1421,62 @@ function updateFabRobot(pct){
   }
   randomBlink();
 })();
+
+
+// ── 儲存空間統計 ──
+async function loadStorageInfo(){
+  try{
+    // localStorage 大小
+    var lsSize = 0;
+    for(var k in localStorage){ if(localStorage.hasOwnProperty(k)) lsSize += (localStorage[k]||'').length * 2; }
+
+    // IndexedDB 背景圖大小
+    var bgSize = 0;
+    try{
+      var bg = await _bgDB.get('img');
+      if(bg) bgSize = bg.length * 2;
+    }catch(e){}
+
+    var totalUsed = lsSize + bgSize;
+
+    // navigator.storage.estimate() 取得瀏覽器配額
+    var quota = 0, browserUsed = 0;
+    if(navigator.storage && navigator.storage.estimate){
+      var est = await navigator.storage.estimate();
+      quota = est.quota || 0;
+      browserUsed = est.usage || 0;
+    }
+
+    // 顯示用量（優先用 estimate，沒有就用手算）
+    var used = browserUsed || totalUsed;
+    var pct  = quota ? Math.min(100, Math.round(used / quota * 100)) : 0;
+
+    function fmtBytes(b){
+      if(b < 1024) return b + ' B';
+      if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+      return (b/1024/1024).toFixed(2) + ' MB';
+    }
+
+    var usedEl = document.getElementById('storage-used');
+    var barEl  = document.getElementById('storage-bar');
+    var quotaEl= document.getElementById('storage-quota');
+    var bdEl   = document.getElementById('storage-breakdown');
+    if(!usedEl) return;
+
+    usedEl.textContent = fmtBytes(used) + (quota ? ' (' + pct + '%)' : '');
+    if(barEl){
+      barEl.style.width = (quota ? pct : 0) + '%';
+      barEl.className = pct > 80 ? 'danger' : pct > 60 ? 'warn' : '';
+    }
+    if(quotaEl) quotaEl.textContent = quota ? '上限 ' + fmtBytes(quota) : '';
+    if(bdEl){
+      var parts = [];
+      if(lsSize)  parts.push('記帳 ' + fmtBytes(lsSize));
+      if(bgSize)  parts.push('背景圖 ' + fmtBytes(bgSize));
+      bdEl.textContent = parts.join(' ／ ');
+    }
+  }catch(e){}
+}
 
 // ── 匯出 Excel（按週期） ──
 function exportExcel(){
