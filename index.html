@@ -80,10 +80,8 @@
   .period-bar-fill{height:100%;border-radius:6px;transition:width .6s;background:linear-gradient(90deg,#4CAF50,#26C6DA,#7E57C2)}
   /* Side panel */
   .side-panel{padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .panel-card{background:rgba(255,255,255,.7);border-radius:20px;padding:14px;
-    box-shadow:6px 6px 14px rgba(170,180,195,.5),-5px -5px 12px rgba(255,255,255,.9);
-    border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-  .panel-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)}
+  .panel-card{background:#282A2E;border-radius:20px;padding:14px;box-shadow:6px 6px 12px rgba(0,0,0,.4),-4px -4px 10px rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+  .panel-title{font-size:13px;font-weight:700;margin-bottom:10px;color:#E0E0E0}
   .pie-wrap{display:flex;justify-content:center}
   .cat-list{margin-top:6px;overflow:hidden}
   .cat-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:5px}
@@ -210,7 +208,7 @@
   .bg-layer img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center}
   .app{position:relative;z-index:1;background:transparent!important}
   .app-with-bg{background:transparent!important}
-  .app-with-bg .sum-card,.app-with-bg .quick-btn,.app-with-bg .panel-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
+  .app-with-bg .sum-card,.app-with-bg .period-bar-wrap{background:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
   .app-with-bg .tx-item{background:rgba(255,255,255,.82);backdrop-filter:blur(6px)}
   .app-with-bg .nav,.app-with-bg .settings-section{background:rgba(255,255,255,.88);backdrop-filter:blur(12px)}
   .app-with-bg .header{background:transparent!important}
@@ -879,47 +877,44 @@ function updateSummary(){
 const _pieAnimMap={};
 
 function drawPie(canvasId, legendId, list, colors){
-  const catMap={};
-  list.forEach(t=>catMap[t.cat]=(catMap[t.cat]||0)+t.amount);
-  const cats=Object.keys(catMap), vals=cats.map(c=>catMap[c]);
-  const total=vals.reduce((s,v)=>s+v,0);
-  const cv=document.getElementById(canvasId), ctx=cv.getContext('2d');
-
-  // 高畫質 Canvas
-  const dpr=window.devicePixelRatio||1;
-  const W=130, H=130;
+  var catMap={};
+  list.forEach(function(t){catMap[t.cat]=(catMap[t.cat]||0)+t.amount;});
+  var cats=Object.keys(catMap), vals=cats.map(function(c){return catMap[c];});
+  var total=vals.reduce(function(s,v){return s+v;},0);
+  var cv=document.getElementById(canvasId), ctx=cv.getContext('2d');
+  var dpr=window.devicePixelRatio||1;
+  var W=130, H=130;
   cv.style.width=W+'px'; cv.style.height=H+'px';
   cv.width=W*dpr; cv.height=H*dpr;
   ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
-  const cx=W/2, cy=H/2;
-  const outerR=W*0.42, innerR=W*0.25;
+  var cx=W/2, cy=H/2;
+  var outerR=W*0.42, innerR=W*0.26, midR=(outerR+innerR)/2;
 
-  // 圖例
-  const legendEl=document.getElementById(legendId);
-  const items=cats.slice(0,4);
+  var legendEl=document.getElementById(legendId);
+  var items=cats.slice(0,4);
   if(total){
     legendEl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:10px">'
-      +items.map((c,i)=>'<div style="display:flex;align-items:center;gap:4px;font-size:11px">'
-        +'<span style="width:10px;height:10px;border-radius:50%;background:'+colors[i%colors.length]+';flex-shrink:0;display:inline-block"></span>'
-        +'<span style="color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c+'</span>'
-        +'<span style="font-weight:700;color:var(--text)">('+Math.round(vals[i]/total*100)+'%)</span>'
-        +'</div>').join('')
-      +'</div>';
+      +items.map(function(c,i){
+        return '<div style="display:flex;align-items:center;gap:4px;font-size:11px">'
+          +'<span style="width:10px;height:10px;border-radius:50%;background:'+colors[i%colors.length]+';flex-shrink:0;display:inline-block;box-shadow:0 0 4px '+colors[i%colors.length]+'"></span>'
+          +'<span style="color:#A0A5B0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c+'</span>'
+          +'<span style="font-weight:700;color:#E0E0E0">('+Math.round(vals[i]/total*100)+'%)</span>'
+          +'</div>';
+      }).join('')+'</div>';
   } else { legendEl.innerHTML=''; }
 
   if(_pieAnimMap[canvasId]) cancelAnimationFrame(_pieAnimMap[canvasId]);
+  cv.onpointerdown=null;
 
   if(!total){
     ctx.clearRect(0,0,W,H);
     ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2);
     ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
-    ctx.fillStyle='#E8ECF1'; ctx.fill();
+    ctx.fillStyle='#202225'; ctx.fill();
     return;
   }
 
-  var activeIndex=-1;
-  var ANIM_MS=1200;
-  var startTime=performance.now();
+  var ANIM_MS=1200, startTime=performance.now();
 
   function _elasticOut(t){
     var c4=(2*Math.PI)/3;
@@ -930,84 +925,69 @@ function drawPie(canvasId, legendId, list, colors){
     var elapsed=now-startTime;
     var progress=Math.min(1,elapsed/ANIM_MS);
     var ep=_elasticOut(progress);
+    var breathe=14+Math.sin(now/200)*5;
     ctx.clearRect(0,0,W,H);
 
-    // 1. 甜甜圈切片
+    // 1. 深色凹陷底槽
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.fillStyle='#202225'; ctx.fill();
+    ctx.clip();
+    ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.lineWidth=12; ctx.strokeStyle='rgba(0,0,0,.4)';
+    ctx.shadowColor='rgba(0,0,0,.8)'; ctx.shadowBlur=12;
+    ctx.shadowOffsetX=6; ctx.shadowOffsetY=6; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.05)';
+    ctx.shadowColor='rgba(255,255,255,.1)'; ctx.shadowBlur=8;
+    ctx.shadowOffsetX=-4; ctx.shadowOffsetY=-4; ctx.stroke();
+    ctx.restore();
+
+    // 2. 光劍 + 電漿流
     var s=-Math.PI/2;
     vals.forEach(function(v,i){
       var fullA=(v/total)*Math.PI*2;
-      var a=fullA*ep;
       var color=colors[i%colors.length];
-      var scx=cx, scy=cy;
-      if(i===activeIndex){ var mid=s+a/2; scx+=Math.cos(mid)*6; scy+=Math.sin(mid)*6; }
-      ctx.beginPath();
-      ctx.arc(scx,scy,outerR,s,s+a);
-      ctx.arc(scx,scy,innerR-2,s+a,s,true);
-      ctx.closePath();
-      ctx.fillStyle=color; ctx.fill();
-      ctx.strokeStyle='#FFF'; ctx.lineWidth=2.5; ctx.stroke();
-      s+=fullA*ep;
+      var gap=fullA>0.15?0.22:0;
+      var drawAngle=Math.max(0,fullA-gap)*Math.max(0,ep);
+      if(drawAngle>0.01){
+        var sa=s+gap/2, ea=sa+drawAngle;
+        ctx.save(); ctx.lineCap='round';
+        ctx.beginPath(); ctx.arc(cx,cy,midR,sa,ea);
+        ctx.strokeStyle=color; ctx.lineWidth=12;
+        ctx.shadowColor=color; ctx.shadowBlur=breathe;
+        ctx.stroke(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx,cy,midR,sa,ea);
+        ctx.strokeStyle='#FFF'; ctx.lineWidth=3.5;
+        ctx.shadowColor='#FFF'; ctx.shadowBlur=6; ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx,cy,midR,sa,ea);
+        ctx.strokeStyle='#FFF'; ctx.lineWidth=4.5;
+        ctx.setLineDash([4,18]); ctx.lineDashOffset=-(now/20);
+        ctx.shadowColor='#FFF'; ctx.shadowBlur=10; ctx.stroke();
+        ctx.setLineDash([]); ctx.restore();
+      }
+      s+=fullA;
     });
 
-    // 2. 雷達掃描
-    if(progress>0.5){
-      try{
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx,cy,outerR,0,Math.PI*2);
-        ctx.arc(cx,cy,innerR,0,Math.PI*2,true);
-        ctx.clip();
-        if(typeof ctx.createConicGradient==='function'){
-          var scanAngle=-(now/800)%(Math.PI*2);
-          var sweepGrd=ctx.createConicGradient(scanAngle,cx,cy);
-          sweepGrd.addColorStop(0,'rgba(255,255,255,0.65)');
-          sweepGrd.addColorStop(0.15,'rgba(255,255,255,0)');
-          sweepGrd.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.fillStyle=sweepGrd;
-          ctx.fillRect(0,0,W,H);
-        }
-        ctx.restore();
-      }catch(ex){}
-    }
-
-    // 3. 中心懸浮白圓
+    // 3. 深灰中心圓
     ctx.save();
     ctx.beginPath(); ctx.arc(cx,cy,innerR,0,Math.PI*2);
-    ctx.shadowColor='rgba(0,0,0,0.15)';
-    ctx.shadowBlur=8; ctx.shadowOffsetY=3;
-    ctx.fillStyle='#FFF'; ctx.fill();
+    ctx.shadowColor='rgba(0,0,0,.6)'; ctx.shadowBlur=12;
+    ctx.shadowOffsetX=3; ctx.shadowOffsetY=4;
+    var btnG=ctx.createLinearGradient(cx-innerR,cy-innerR,cx+innerR,cy+innerR);
+    btnG.addColorStop(0,'#36393F'); btnG.addColorStop(1,'#202225');
+    ctx.fillStyle=btnG; ctx.fill();
     ctx.restore();
 
-    // 4. 中心文字
+    // 4. 白色金額
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='#1A1A1A';
+    ctx.fillStyle='#FFF';
     ctx.font='bold '+(W*0.14)+'px "Noto Sans TC",sans-serif';
-    var dispV=activeIndex!==-1?vals[activeIndex]:Math.round(total*ep);
-    ctx.fillText(dispV>=10000?(dispV/10000).toFixed(1)+'萬':dispV.toLocaleString(),cx,cy);
+    var d=Math.round(total*ep);
+    ctx.fillText(d>=10000?(d/10000).toFixed(1)+'萬':d.toLocaleString(),cx,cy);
 
     _pieAnimMap[canvasId]=requestAnimationFrame(renderPieFrame);
   }
-
-  // 觸控偵測
-  cv.onpointerdown=function(e){
-    if(!total) return;
-    var rect=cv.getBoundingClientRect();
-    var dx=(e.clientX-rect.left)-(rect.width/2);
-    var dy=(e.clientY-rect.top)-(rect.height/2);
-    var scale=W/rect.width;
-    var dist=Math.sqrt(dx*dx+dy*dy)*scale;
-    if(dist>=innerR&&dist<=outerR){
-      var angle=Math.atan2(dy,dx)+Math.PI/2;
-      if(angle<0) angle+=Math.PI*2;
-      var cur=0, clicked=-1;
-      for(var i=0;i<vals.length;i++){
-        var sa=(vals[i]/total)*Math.PI*2;
-        if(angle>=cur&&angle<cur+sa){clicked=i;break;}
-        cur+=sa;
-      }
-      activeIndex=(activeIndex===clicked)?-1:clicked;
-    } else { activeIndex=-1; }
-  };
 
   _pieAnimMap[canvasId]=requestAnimationFrame(renderPieFrame);
 }
@@ -1062,8 +1042,8 @@ function refresh(){
   const p=currentPeriod();
   const txs=getPeriodTx(p);
   updateSummary();
-  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),['hsl(2,70%,60%)','hsl(10,70%,68%)','hsl(356,70%,52%)','hsl(18,70%,73%)','hsl(348,70%,46%)','hsl(6,70%,76%)']);
-  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['hsl(211,70%,45%)','hsl(207,70%,62%)','hsl(220,70%,33%)','hsl(205,70%,68%)','hsl(215,70%,40%)','hsl(207,70%,76%)']);
+  drawPie('pieChart','catLegend',txs.filter(t=>t.type==='expense'&&t.pay==='現金'),['#FF5252','#FF7043','#E91E63','#FF9800','#F44336','#FF6D00']);
+  drawPie('pieChart2','catLegend2',txs.filter(t=>t.type==='expense'&&t.pay==='信用卡'),['#2196F3','#00BCD4','#3F51B5','#00E5FF','#1976D2','#40C4FF']);
   renderTx();
 }
 
