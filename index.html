@@ -1163,7 +1163,7 @@ function clearAllData(){
 // ── 背景圖 ──
 function handleBgUpload(e){
   const f=e.target.files[0];if(!f)return;
-  if(f.size>5*1024*1024){showToast('❌ 圖片請小於 5MB');return}
+  if(f.size>10*1024*1024){showToast('❌ 圖片請小於 10MB');return}
   const r=new FileReader();
   r.onload=async ev=>{
     const d=ev.target.result;
@@ -1178,7 +1178,7 @@ function updateBgOpacity(v){
   document.getElementById('bgOpacityVal').textContent=v+'%';
   localStorage.setItem('acct_bg_opacity',v);
   const img=document.getElementById('bgImg');
-  if(img.src) img.style.opacity=(parseInt(v)/100).toFixed(2);
+  if(img.style.display!=='none'&&img.src) img.style.opacity=(parseInt(v)/100).toFixed(2);
 }
 function applyBg(url,op){
   const img=document.getElementById('bgImg');
@@ -1189,10 +1189,12 @@ function applyBg(url,op){
   document.body.style.background='transparent';
   document.documentElement.style.background='transparent';
 }
-function removeBg(){
-  localStorage.removeItem('acct_bg_v1');
+async function removeBg(){
+  await _bgDB.del('img');
+  localStorage.removeItem('acct_bg_opacity');
   const img=document.getElementById('bgImg');
   img.src='';img.style.display='none';
+  document.getElementById('bgPreview').src='';
   document.getElementById('bgPreview').classList.remove('show');
   document.getElementById('mainApp').classList.remove('app-with-bg');
   document.body.style.background='';
